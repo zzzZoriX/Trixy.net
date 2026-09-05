@@ -1,7 +1,8 @@
 #include <iostream>
+#include "tn-ui/ui.hpp"
 
 int main(void) {
-    std::cout << "Hello from Trixy.net!" << std::endl;
+    ui::print({{GREEN, "Hello from Trixy.net!\n"}});
 
     return 0;
 }
