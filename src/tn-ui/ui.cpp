@@ -8,8 +8,9 @@
 using namespace ftxui;
 
 
-ui::UI::UI()
-:   screen{ScreenInteractive::TerminalOutput()} {}
+ui::UI::UI(std::shared_ptr<binder> binder)
+:   screen{ScreenInteractive::TerminalOutput()}
+,   tn_binder(binder) {}
 
 void ui::UI::init_container() {
     init_components();
@@ -51,7 +52,7 @@ void ui::UI::init_components() {
 
     auto ping_tab{Container::Vertical({
         Container::Horizontal({
-            Input("Enter the host name or ip"),
+            Input(tn_binder->get_host_to_ping_as_ptr(), "Enter the host name or ip"),
             Button("Ping host", [] {}),
             Button("Ping server list", [] {})
         })
