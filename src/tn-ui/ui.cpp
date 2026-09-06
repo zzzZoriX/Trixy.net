@@ -1,12 +1,57 @@
 #include "ui.hpp"
+#include <cstdlib>
 #include <vector>
+#include <string>
 
-void ui::print(std::initializer_list<ui::colorized_text> list) {
-    std::vector<ui::colorized_text> pair_list{list};
+using namespace ftxui;
 
-    for(const auto& [color, text]: pair_list) {
-        std::cout << color << text;
-    }
 
-    std::cout << RESET;
+ui::UI::UI()
+:   screen{ScreenInteractive::TerminalOutput()} {}
+
+void ui::UI::init_container() {
+    init_components();
+
+    auto container{Container::Vertical({features_container})};
+
+    renderer = Renderer(container, [this] {
+        return vbox({
+            text("Trixy.net") | bold | center | color(Color::RGB(0, 179, 255)),
+            separator(),
+            hbox({
+                vbox({
+                    text("Features:") | bold | center | color(Color::RGB(0, 255, 171)),
+                    features_container->Render() | bold | center |color(Color::RGB(0, 164, 109))
+                }),
+                separator(),
+                vbox({
+                    text("Result:") | bold | center | color(Color::RGB(255, 255, 0)),
+                })
+            })
+        }) | border;
+    });
+}
+
+void ui::UI::run() {
+    std::system("clear");
+
+    screen.Loop(renderer);
+}
+
+void ui::UI::init_components() {
+    Component button_ps{Button("Ping server", [] {})};
+    Component button_psl{Button("Ping servers list", [] {})};
+    Component button_st{Button("Show traffic", [] {})};
+    Component button_uc{Button("Update config", [] {})};
+    Component button_s{Button("Settings", [] {})};
+    Component button_e{Button("Exit", screen.ExitLoopClosure())};
+
+    features_container = Container::Vertical({
+        button_ps,
+        button_psl,
+        button_st,
+        button_uc,
+        button_s,
+        button_e
+    });
 }

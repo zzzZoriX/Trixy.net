@@ -1,16 +1,33 @@
 #pragma once
 
-#include "colorize.hpp"
-#include <iostream>
-#include <initializer_list>
+#include <ftxui/ftxui.hpp>
 
 namespace ui {
 
-/**
- * @brief   colored print of text list
- * 
- * @param list  pair list of color and text
- */
-void print(std::initializer_list<colorized_text> list);
+class UI {
+    ftxui::ScreenInteractive screen;
+    ftxui::Component renderer;
+
+    ftxui::Component features_container;
+
+public:
+    UI();
+
+    /**
+     * @brief Initialize the UI application.
+     */
+    void init_container();
+
+    /**
+     * @brief Run the UI application.
+     */
+    void run();
+
+private:
+    /**
+     * @brief Initialize the UI components.
+     */
+    void init_components();
+};
 
 }
