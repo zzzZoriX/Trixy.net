@@ -1,4 +1,6 @@
-#include "ui.hpp"
+#include <tn-ui/ui.hpp>
+#include <tn-ui/tn-screen.hpp>
+#include <tn-handlers/handlers.hpp>
 #include <cstdlib>
 #include <vector>
 #include <string>
@@ -33,8 +35,9 @@ void ui::UI::init_container() {
 }
 
 void ui::UI::run() {
+    // todo: ui::new_screen();
     std::system("clear");
-
+    
     screen.Loop(renderer);
 }
 
@@ -44,7 +47,9 @@ void ui::UI::init_components() {
     Component button_st{Button("Show traffic", [] {})};
     Component button_uc{Button("Update config", [] {})};
     Component button_s{Button("Settings", [] {})};
-    Component button_e{Button("Exit", screen.ExitLoopClosure())};
+    Component button_e{Button("Exit", [this] { 
+        handlers::tn_exit(screen); 
+    })};
 
     features_container = Container::Vertical({
         button_ps,
