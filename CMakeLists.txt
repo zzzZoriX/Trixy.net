@@ -8,8 +8,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_executable(trixy-net ./src/main.cpp
     src/tn-ui/ui.cpp
     src/tn-handlers/tn-exit.cpp
-    src/tn-ui/tn-screen.cpp
-    src/tn-handlers/tn-config.cpp)
+    src/tn-ui/tn-screen.cpp)
 
 target_include_directories(trixy-net PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 

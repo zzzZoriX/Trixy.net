@@ -14,7 +14,7 @@ ui::UI::UI()
 void ui::UI::init_container() {
     init_components();
 
-    auto container{Container::Vertical({features_container})};
+    auto container{Container::Horizontal({actions_menu, action_container})};
 
     renderer = Renderer(container, [this] {
         return vbox({
@@ -23,12 +23,10 @@ void ui::UI::init_container() {
             hbox({
                 vbox({
                     text("Features:") | bold | center | color(Color::RGB(0, 255, 171)),
-                    features_container->Render() | bold | center |color(Color::RGB(0, 164, 109))
+                    actions_menu->Render() | bold | center | color(Color::RGB(0, 164, 109))
                 }),
                 separator(),
-                vbox({
-                    text("Result:") | bold | center | color(Color::RGB(255, 255, 0)),
-                })
+                action_container->Render()
             })
         }) | border;
     });
@@ -42,29 +40,45 @@ void ui::UI::run() {
 }
 
 void ui::UI::init_components() {
-    Component button_ps{Button("Ping server", [] {})};
-    Component button_psl{Button("Ping servers list", [] {})};
-    Component button_st{Button("Show traffic", [] {})};
-    Component button_usl{Button("Update server list", [] {})};
-    Component button_astl{Button("Add server to list", [] {})};
-    Component button_tsfl{Button("Remove server from list", [] {})};
-    Component button_gsl{Button("Get server list", [] {})};
-    Component button_slp{Button("Show logs path", [] {})};
-    Component button_s{Button("Settings", [] {})};
-    Component button_e{Button("Exit", [this] { 
-        handlers::tn_exit(screen); 
+    actions_tab = {
+        "Ping",
+        "Show traffic",
+        "Settings",
+        "Trixy"
+    };
+    action_selected = 0;
+    actions_menu = Menu(&actions_tab, &action_selected);
+
+    auto ping_tab{Container::Vertical({
+        Container::Horizontal({
+            Input("Enter the host name or ip"),
+            Button("Ping host", [] {}),
+            Button("Ping server list", [] {})
+        })
     })};
 
-    features_container = Container::Vertical({
-        button_ps,
-        button_psl,
-        button_st,
-        button_usl,
-        button_astl,
-        button_tsfl,
-        button_gsl,
-        button_slp,
-        button_s,
-        button_e
-    });
+    auto traffic_tab{Container::Vertical({
+        Button("Start tracking", [] {})
+    })};
+
+    auto settings_tab{Container::Vertical({
+        
+    })};
+
+    auto trixy_tab{Container::Vertical({
+        Container::Horizontal({
+            Button("Exit", [this] { handlers::tn_exit(screen); }),
+            Button("Restart", [] {})
+        })
+    })};
+
+    action_container = Container::Tab(
+        {
+            ping_tab,
+            traffic_tab,
+            settings_tab,
+            trixy_tab
+        },
+        &action_selected
+    );
 }
