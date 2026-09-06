@@ -12,4 +12,9 @@ namespace handlers {
  */
 void tn_exit(ftxui::ScreenInteractive& screen);
 
+/**
+ * @brief Handle the restart operation for the application.
+ */
+void tn_restart();
+
 }

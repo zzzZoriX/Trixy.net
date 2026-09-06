@@ -1,4 +1,4 @@
-#include <tn-handlers/tn-exit.hpp>
+#include <tn-handlers/tn-trixy.hpp>
 #include <tn-ui/tn-screen.hpp>
 #include <cstdlib>
 
