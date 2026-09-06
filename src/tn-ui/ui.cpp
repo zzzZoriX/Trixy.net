@@ -37,7 +37,7 @@ void ui::UI::init_container() {
 void ui::UI::run() {
     // todo: ui::new_screen();
     std::system("clear");
-    
+
     screen.Loop(renderer);
 }
 
@@ -45,7 +45,11 @@ void ui::UI::init_components() {
     Component button_ps{Button("Ping server", [] {})};
     Component button_psl{Button("Ping servers list", [] {})};
     Component button_st{Button("Show traffic", [] {})};
-    Component button_uc{Button("Update config", [] {})};
+    Component button_usl{Button("Update server list", [] {})};
+    Component button_astl{Button("Add server to list", [] {})};
+    Component button_tsfl{Button("Remove server from list", [] {})};
+    Component button_gsl{Button("Get server list", [] {})};
+    Component button_slp{Button("Show logs path", [] {})};
     Component button_s{Button("Settings", [] {})};
     Component button_e{Button("Exit", [this] { 
         handlers::tn_exit(screen); 
@@ -55,7 +59,11 @@ void ui::UI::init_components() {
         button_ps,
         button_psl,
         button_st,
-        button_uc,
+        button_usl,
+        button_astl,
+        button_tsfl,
+        button_gsl,
+        button_slp,
         button_s,
         button_e
     });
