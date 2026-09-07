@@ -5,7 +5,6 @@
 #include <string>
 #include <map>
 #include <memory>
-#include <binder.hpp>
 
 using namespace ftxui;
 
@@ -13,8 +12,6 @@ using namespace ftxui;
 namespace ui {
 
 class UI {
-    std::shared_ptr<binder> tn_binder;
-
     ScreenInteractive screen;
     Component renderer;
 

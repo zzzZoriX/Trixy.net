@@ -5,21 +5,24 @@
 #pragma once
 
 #include <string>
+#include <string_view>
 #include <memory>
+#include <tn-handlers/handlers.hpp>
 
 
 // As long as Trixy is not asynchronous, there is no need to use a mutex or `boost::asio::strand`.
-class binder {
-    // ping
-    std::string host_to_ping;
-
-    // traffic
-
-    // settings
-
-    // trixy
+class tn_core {
+    handlers::config tn_cfg;
+    
+    
+    
 
 public:
-    std::string* get_host_to_ping_as_ptr(void);
-    std::string get_host_to_ping(void) const;
+    tn_core() = default;
+
+    void run(std::string_view cfgfp);
+
+    void restart();
+
+    void stop();
 };

@@ -9,8 +9,9 @@ add_executable(trixy-net ./src/main.cpp
     src/tn-ui/ui.cpp
     src/tn-handlers/tn-trixy.cpp
     src/tn-ui/tn-screen.cpp
-    src/binder.cpp
-    stc/tn-handlers/tn-config.cpp)
+    src/core.cpp
+    src/tn-handlers/tn-config.cpp
+    src/tn-handlers/tn-servers.cpp)
 
 target_include_directories(trixy-net PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
