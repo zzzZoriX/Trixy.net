@@ -58,6 +58,14 @@ std::string config::get_logs_path() const {
     return files.logs_path;
 }
 
+std::string config::get_servers_file(void) const {
+    return files.servers_file;
+}
+
+std::string config::get_settings_file(void) const {
+    return files.settings_file;
+}
+
 void config::update_logs_path(const std::string&& logs_path) {
     files.logs_path = logs_path;
 }

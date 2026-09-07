@@ -20,6 +20,9 @@ public:
     ~config();
 
     std::string get_logs_path() const;
+    std::string get_servers_file(void) const;
+    std::string get_settings_file(void) const;
+    
     void update_logs_path(const std::string&& logs_path);
     void update_servers_file(const std::string&& sfn);
     void update_settings_file(const std::string&& stfn);
