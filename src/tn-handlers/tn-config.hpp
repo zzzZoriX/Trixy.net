@@ -19,14 +19,10 @@ public:
     config(std::string_view config_file_path);
     ~config();
 
-    void get_settings() const; // todo: replace return void type with a struct containing the settings data
-    std::vector<std::string> get_servers_list() const;
     std::string get_logs_path() const;
-
-    void update_settings(void) const; // todo: void param type should be replaced with a struct containing the settings data
-    void add_server_to_list(const std::string& server) const;
-    void remove_server_from_list(const std::string& server) const;
-    void update_logs_path(const std::string& logs_path);
+    void update_logs_path(const std::string&& logs_path);
+    void update_servers_file(const std::string&& sfn);
+    void update_settings_file(const std::string&& stfn);
 };
 
 }
