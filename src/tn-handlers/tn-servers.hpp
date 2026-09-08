@@ -22,5 +22,7 @@ public:
 private:
     bool validate_server_name(const std::string_view server) const;
 };
+
+using server_ui = std::pair<std::string, bool>;
     
 }
