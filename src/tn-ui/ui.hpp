@@ -5,6 +5,7 @@
 #include <string>
 #include <map>
 #include <memory>
+#include"../core.hpp"
 
 using namespace ftxui;
 
@@ -19,12 +20,18 @@ class UI {
     Component action_container;
 
     std::vector<std::string> actions_tab;
-    int action_selected;
+    std::vector<Component> servers_checkboxes;
+    std::vector<handlers::server_ui> s_ui_list;
+
+    int action_selected,
+        server_selected;
 
     std::map<std::string, std::map<std::string, Component>> actions_map;
 
+    std::weak_ptr<tn_core> core_wptr;
+
 public:
-    UI(std::shared_ptr<binder> binder);
+    UI(std::shared_ptr<tn_core> core_wptr);
 
     /**
      * @brief Initialize the UI application.

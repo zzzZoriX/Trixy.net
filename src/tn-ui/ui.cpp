@@ -8,9 +8,9 @@
 using namespace ftxui;
 
 
-ui::UI::UI(std::shared_ptr<binder> binder)
+ui::UI::UI(std::shared_ptr<tn_core> core_wptr)
 :   screen{ScreenInteractive::TerminalOutput()}
-,   tn_binder(binder) {}
+,   core_wptr(core_wptr) {}
 
 void ui::UI::init_container() {
     init_components();
@@ -50,11 +50,21 @@ void ui::UI::init_components() {
     action_selected = 0;
     actions_menu = Menu(&actions_tab, &action_selected);
 
+    if(const auto core_ptr = core_wptr.lock())
+        s_ui_list = handlers::to_ui(core_ptr->get_servers_list_service()->get_list());
+
+    for(auto& s: s_ui_list) {
+        servers_checkboxes.push_back(Checkbox(
+            s.first, &s.second
+        ));
+    }
+
     auto ping_tab{Container::Vertical({
-        Container::Horizontal({
-            Input(tn_binder->get_host_to_ping_as_ptr(), "Enter the host name or ip"),
-            Button("Ping host", [] {}),
-            Button("Ping server list", [] {})
+        servers_checkboxes,
+        Button("Ping", [this] {
+            if(const auto core_ptr = core_wptr.lock()){
+                // todo
+            }
         })
     })};
 
