@@ -48,4 +48,6 @@ private:
 template<typename Iterator>
 void compute_check_sum(icmp_header& header, Iterator begin, Iterator end);
 
+unsigned short get_id();
+
 }

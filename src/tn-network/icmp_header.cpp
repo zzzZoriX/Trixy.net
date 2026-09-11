@@ -49,3 +49,11 @@ void compute_check_sum(icmp_header& header, Iterator begin, Iterator end) {
 
     header.check_sum(static_case<unsigned short>(~sum));
 }
+
+unsigned short get_id() {
+#ifdef ASIO_WINDOWS
+    return static_cast<unsigned short>(::GetCurrentProcessId());
+#else 
+    return static_cast<unsigned short>(::getpid());
+#endif
+}
