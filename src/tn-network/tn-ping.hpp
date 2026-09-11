@@ -6,43 +6,52 @@
 #include <functional>
 #include <chrono>
 #include <string_view>
+#include <memory>
 
 #include "ipv4_header.hpp"
 #include "icmp_header.hpp"
 
 using ping_time = std::chrono::milliseconds;
 using namespace boost::asio;
+using namespace boost;
 
-using ping_callback = std::function<void()>;
 
 
 namespace network {
-
+    
 struct ping_result {
-    ping_time   avg_ping,
-                max_ping,
-                min_ping;
+    ping_time   avg_ping;
     std::string host;
-
+        
     ping_result(
-        const ping_time avg,
-        const ping_time max,
-        const ping_time min,
+        const int avg,
         std::string_view host
     )
     :   host(host)
-    ,   avg_ping(avg)
-    ,   max_ping(max)
-    ,   min_ping(min) {}
+    ,   avg_ping(avg) {}
+
+    ping_result()
+    :   host("")
+    ,   avg_ping(0) {}
+
+    ping_result(
+        const ping_time avg,
+        std::string_view host
+    )
+    :   host(host)
+    ,   avg_ping(avg) {}
 };
 
-class ping {
+using ping_callback = std::function<void(ping_result)>;
+#define ERROR_PING(host) ping_result(35505, host)
+    
+class pinger: public std::enable_shared_from_this<pinger> {
     io_context& ioc;
     std::string host;
 
     steady_timer timer;
     unsigned short seq_num;
-    chrono::steady_clock::time_point time_sent;
+    std::chrono::steady_clock::time_point time_sent;
     streambuf buffer;
 
     ip::icmp::resolver resolver;
@@ -50,24 +59,30 @@ class ping {
     ip::icmp::socket sock;
 
     ping_callback callback;
+    
+    std::chrono::seconds timeout;
+
+    ping_result result;
 
 public:
-    ping(const std::string& host, io_context& ioc, ping_callback callback);
+    pinger(const std::string& host, io_context& ioc, ping_callback callback);
+
+    void start();
 
 private:
     void start_send();
-    void handle_timeout();
+    void handle_timeout(system::error_code ec);
     void start_receive();
-    void hadnle_receive();
+    void handle_receive(system::error_code ec, std::size_t len);
 };
 
-class pinger {
+class ping_manager {
     io_context& ioc;
 
 public:
-    pinger(io_context& ioc);
+    ping_manager(io_context& ioc);
 
-    std::vector<ping_result> start(std::vector<std::string> hosts, ping_callback callback) const;
+    void start(std::vector<std::string> hosts, ping_callback callback) const;
 };
 
 };
