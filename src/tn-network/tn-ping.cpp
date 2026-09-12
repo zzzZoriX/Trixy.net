@@ -23,7 +23,8 @@ pinger::pinger(const std::string& host, io_context& ioc, ping_callback callback,
 ,   timer(ioc)
 ,   seq_num(0)
 ,   timeout(5)
-,   core(core) {
+,   core(core) 
+,   callback(callback) {
     dest = *resolver.resolve(ip::icmp::v4(), host, "").begin();
 }
 
@@ -78,6 +79,7 @@ void pinger::handle_timeout(system::error_code ec) {
 
         callback(ERROR_PING(host));
     }
+    else if (ec == boost::asio::error::operation_aborted) {}
     else {
         callback(TIMEOUT_PING(host));
     }
@@ -127,5 +129,7 @@ void pinger::handle_receive(system::error_code ec, std::size_t len) {
 
             callback(ping_result(elapsed, host));
         }
+
+        timer.cancel();
     }
 }
