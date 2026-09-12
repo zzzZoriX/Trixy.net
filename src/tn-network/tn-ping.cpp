@@ -1,6 +1,7 @@
 #include "tn-ping.hpp"
 #include <iostream>
 #include <format>
+#include "../core.hpp"
 
 using namespace network;
 

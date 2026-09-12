@@ -10,12 +10,12 @@
 
 #include "ipv4_header.hpp"
 #include "icmp_header.hpp"
-#include "../core.hpp"
 
 using ping_time = std::chrono::milliseconds;
 using namespace boost::asio;
 using namespace boost;
 
+class tn_core;
 
 
 namespace network {
