@@ -32,8 +32,8 @@ public:
 
     void stop();
 
-    const handlers::servers* const get_servers_list_service();
-    const ui::UI* const get_ui_service();
-    const handlers::config* const get_config_service();
-    const error_handling::loger* const get_loger();
+    handlers::servers* const get_servers_list_service();
+    ui::UI* const get_ui_service();
+    handlers::config* const get_config_service();
+    error_handling::loger* const get_loger();
 };
