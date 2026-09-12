@@ -3,45 +3,45 @@
 #include <boost/algorithm/string.hpp>
 #include <vector>
 #include <array>
+#include <filesystem>
 
 using namespace handlers;
 
 
 config::config(std::string_view config_file_path) 
-:   config_file_path(config_file_path) {
-    std::ifstream config_file(config_file_path.data());
+    : config_file_path(config_file_path) {
+
+    std::ifstream config_file{std::filesystem::path(config_file_path)};
     if (!config_file.is_open()) {
         throw std::runtime_error("Failed to open config file: " + std::string(config_file_path));
     }
 
-    std::string config_data((std::istreambuf_iterator<char>(config_file)), std::istreambuf_iterator<char>());
-    config_file.close();
+    std::string line;
+    while (std::getline(config_file, line)) {
+        boost::trim(line);
 
-    std::vector<std::string> words;
+        if (line.empty() || line.starts_with('#')) continue;
 
-    boost::split(words, config_data, boost::is_any_of("=\n"), boost::token_compress_on);
+        auto delimiter_pos = line.find('=');
+        if (delimiter_pos == std::string::npos) continue;
 
-    for(auto i = 0; i < words.size(); ++i) {
-        try {
-            const auto& word = words.at(i++);
+        std::string key = line.substr(0, delimiter_pos);
+        std::string value = line.substr(delimiter_pos + 1);
 
-            if(word == "settings") {
-                config::files.settings_file = words.at(i);
-            }
-            else if(word == "servli") {
-                config::files.servers_file = words.at(i);
-            }
-            else if(word == "logspath") {
-                config::files.logs_path = words.at(i);
-            }
-        }
-        catch(const std::exception& e) {
-            throw std::runtime_error("Error processing config data: " + std::string(e.what()));
+        boost::trim(key);
+        boost::trim(value);
+
+        if (key == "settings") {
+            config::files.settings_file = value;
+        } else if (key == "servli") {
+            config::files.servers_file = value;
+        } else if (key == "logspath") {
+            config::files.logs_path = value;
         }
     }
 }
 
-config::~config() {
+void config::commit() const {
     std::ofstream config_file(config_file_path);
     if (!config_file.is_open()) {
         throw std::runtime_error("Failed to open config file for writing: " + config_file_path);

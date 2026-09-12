@@ -17,7 +17,8 @@ class config {
 
 public:
     config(std::string_view config_file_path);
-    ~config();
+
+    void commit() const;
 
     std::string get_logs_path() const;
     std::string get_servers_file(void) const;

@@ -12,10 +12,16 @@ tn_core::tn_core(std::string_view cfgfp, boost::asio::io_context& ioc)
 void tn_core::run() {
     tn_pm = network::ping_manager(ioc, shared_from_this());
     tn_ui = ui::UI(shared_from_this());
+
+    tn_ui.init_container();
+    tn_ui.run();
 }
 
 void tn_core::stop() {
     tn_loger.create_log();
+
+    tn_slm.commit();
+    tn_cfg.commit();
 }
 
 handlers::servers* const tn_core::get_servers_list_service() {
