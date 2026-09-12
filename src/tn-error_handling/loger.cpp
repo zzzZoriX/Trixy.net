@@ -10,7 +10,7 @@ using namespace error_handling;
 loger::loger(std::string_view path)
 :   logs_path(path) {}
 
-void loger::add_log(std::string_view msg, const error_code code) {
+void loger::add_log(std::string msg, const error_code code) {
     auto now{std::chrono::floor<std::chrono::seconds>(std::chrono::system_clock::now())};
 
     auto str_time{std::format("{:%T}", now)};

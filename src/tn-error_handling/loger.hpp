@@ -15,7 +15,7 @@ class loger {
 public:
     loger(std::string_view path);
 
-    void add_log(std::string_view msg, const error_code code);
+    void add_log(std::string msg, const error_code code);
 
     void create_log() const;
 };
