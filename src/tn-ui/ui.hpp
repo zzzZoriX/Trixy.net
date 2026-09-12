@@ -20,8 +20,8 @@ class UI {
     Component action_container;
 
     std::vector<std::string> actions_tab;
-    std::vector<Component> servers_checkboxes;
-    std::vector<handlers::server_ui> s_ui_list;
+    std::vector<Component> servers_list;
+    std::vector<std::string> pings_list;
 
     int action_selected,
         server_selected;

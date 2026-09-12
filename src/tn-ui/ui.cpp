@@ -1,9 +1,11 @@
 #include <tn-ui/ui.hpp>
 #include <tn-ui/tn-screen.hpp>
 #include <tn-handlers/handlers.hpp>
+#include <tn-network/tn-ping.hpp>
 #include <cstdlib>
 #include <vector>
 #include <string>
+#include <algorithm>
 
 using namespace ftxui;
 
@@ -50,20 +52,43 @@ void ui::UI::init_components() {
     action_selected = 0;
     actions_menu = Menu(&actions_tab, &action_selected);
 
-    if(const auto core_ptr = core_wptr.lock())
-        s_ui_list = handlers::to_ui(core_ptr->get_servers_list_service()->get_list());
+    std::vector<std::string> slist;
+    
+    if(const auto core_ptr = core_wptr.lock()) {
+        slist = core_ptr->get_servers_list_service()->get_list();
 
-    for(auto& s: s_ui_list) {
-        servers_checkboxes.push_back(Checkbox(
-            s.first, &s.second
-        ));
+        pings_list.reserve(slist.size());
+        std::fill(pings_list.begin(), pings_list.end(), "0 ms");
+
+        for(int server = 0; server < slist.size(); ++server) {
+            std::string server_name = slist.at(server);
+
+            auto row_component = Renderer([server_name, this, server] {
+                return hbox({
+                    text(server_name) | flex,
+                    separator(),
+                    text(pings_list.at(server))
+                });
+            });
+
+            servers_list.push_back(row_component);
+        }
     }
 
     auto ping_tab{Container::Vertical({
-        servers_checkboxes,
-        Button("Ping", [this] {
+        Container::Vertical(servers_list),
+        Button("Ping", [this, slist] {
             if(const auto core_ptr = core_wptr.lock()){
-                // todo
+                core_ptr->get_ping_manager()->start(
+                    slist,
+                    [this, slist](network::ping_result result) {
+                        if(auto server{std::find(slist.begin(), slist.end(), result.host)}; server != slist.end()) {
+                            auto index = std::distance(slist.begin(), server);
+
+                            pings_list.at(index) = std::to_string(result.avg_ping.count());
+                        }
+                    }
+                );
             }
         })
     })};
