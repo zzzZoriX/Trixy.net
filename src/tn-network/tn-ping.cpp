@@ -1,10 +1,12 @@
 #include "tn-ping.hpp"
 #include <iostream>
+#include <format>
 
 using namespace network;
 
-ping_manager::ping_manager(io_context& ioc)
-:   ioc(ioc) {}
+ping_manager::ping_manager(io_context& ioc, std::shared_ptr<tn_core> core)
+:   ioc(ioc)
+,   core(core) {}
 
 void ping_manager::start(std::vector<std::string> hosts, ping_callback callback) const {
     for(const auto& host: hosts)
@@ -12,14 +14,15 @@ void ping_manager::start(std::vector<std::string> hosts, ping_callback callback)
 }
 
 
-pinger::pinger(const std::string& host, io_context& ioc, ping_callback callback)
+pinger::pinger(const std::string& host, io_context& ioc, ping_callback callback, std::weak_ptr<tn_core> core)
 :   host(host)
 ,   resolver(ioc)
 ,   ioc(ioc)
 ,   sock(ioc, ip::icmp::v4())
 ,   timer(ioc)
 ,   seq_num(0)
-,   timeout(5) {
+,   timeout(5)
+,   core(core) {
     dest = *resolver.resolve(ip::icmp::v4(), host, "").begin();
 }
 
@@ -59,16 +62,23 @@ void pinger::start_send() {
 }
 
 void pinger::handle_timeout(system::error_code ec) {
-    if(ec) {
-        // todo: add aborting there
-    }
-    else {
-        system::error_code sock_ec;
+    system::error_code sock_ec;
 
-        sock.cancel(sock_ec);
-        sock.close(sock_ec);
+    sock.cancel(sock_ec);
+    sock.close(sock_ec);
+
+    if(ec) {
+        if(auto core_ptr = core.lock()) {
+            core_ptr->get_loger()->add_log(
+                std::format("Error in timeout: {}", ec.message()),
+                TIMEOUT_ABORT
+            );
+        }
 
         callback(ERROR_PING(host));
+    }
+    else {
+        callback(TIMEOUT_PING(host));
     }
 }
 
@@ -83,7 +93,14 @@ void pinger::start_receive() {
 
 void pinger::handle_receive(system::error_code ec, std::size_t len) {
     if(ec) {
-        // todo: add aboting there
+        if(auto core_ptr = core.lock()) {
+            core_ptr->get_loger()->add_log(
+                std::format("Error occured when reply was received: {}", ec.message()),
+                READ_ABORT
+            );
+        }
+
+        callback(ERROR_PING(host));
     }
     else {
         buffer.commit(len);

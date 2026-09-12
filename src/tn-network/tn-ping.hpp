@@ -10,6 +10,7 @@
 
 #include "ipv4_header.hpp"
 #include "icmp_header.hpp"
+#include "../core.hpp"
 
 using ping_time = std::chrono::milliseconds;
 using namespace boost::asio;
@@ -44,10 +45,12 @@ struct ping_result {
 
 using ping_callback = std::function<void(ping_result)>;
 #define ERROR_PING(host) ping_result(35505, host)
+#define TIMEOUT_PING(host) ping_result(7107111, host)
     
 class pinger: public std::enable_shared_from_this<pinger> {
     io_context& ioc;
     std::string host;
+    std::weak_ptr<tn_core> core;
 
     steady_timer timer;
     unsigned short seq_num;
@@ -65,7 +68,7 @@ class pinger: public std::enable_shared_from_this<pinger> {
     ping_result result;
 
 public:
-    pinger(const std::string& host, io_context& ioc, ping_callback callback);
+    pinger(const std::string& host, io_context& ioc, ping_callback callback, std::weak_ptr<tn_core> core);
 
     void start();
 
@@ -78,9 +81,10 @@ private:
 
 class ping_manager {
     io_context& ioc;
+    std::weak_ptr<tn_core> core;
 
 public:
-    ping_manager(io_context& ioc);
+    ping_manager(io_context& ioc, std::shared_ptr<tn_core> core);
 
     void start(std::vector<std::string> hosts, ping_callback callback) const;
 };
