@@ -3,7 +3,6 @@
 
 tn_core::tn_core(std::string_view cfgfp, boost::asio::io_context& ioc) 
 :   tn_cfg(cfgfp) 
-,   tn_slm(tn_cfg.get_servers_file())
 ,   tn_loger(tn_cfg.get_logs_path())
 ,   ioc(ioc)
 ,   tn_ui(nullptr)
@@ -12,6 +11,7 @@ tn_core::tn_core(std::string_view cfgfp, boost::asio::io_context& ioc)
 void tn_core::run() {
     tn_pm = network::ping_manager(ioc, shared_from_this());
     tn_ui = ui::UI(shared_from_this());
+    tn_slm = handlers::servers(tn_cfg.get_servers_file(), shared_from_this());
 
     tn_ui.init_container();
     tn_ui.run();

@@ -9,9 +9,9 @@ using namespace handlers;
 
 
 config::config(std::string_view config_file_path) 
-    : config_file_path(config_file_path) {
-
+:   config_file_path(config_file_path) {
     std::ifstream config_file{std::filesystem::path(config_file_path)};
+
     if (!config_file.is_open()) {
         throw std::runtime_error("Failed to open config file: " + std::string(config_file_path));
     }
@@ -19,8 +19,6 @@ config::config(std::string_view config_file_path)
     std::string line;
     while (std::getline(config_file, line)) {
         boost::trim(line);
-
-        if (line.empty() || line.starts_with('#')) continue;
 
         auto delimiter_pos = line.find('=');
         if (delimiter_pos == std::string::npos) continue;
@@ -33,9 +31,11 @@ config::config(std::string_view config_file_path)
 
         if (key == "settings") {
             config::files.settings_file = value;
-        } else if (key == "servli") {
+        } 
+        else if (key == "servli") {
             config::files.servers_file = value;
-        } else if (key == "logspath") {
+        } 
+        else if (key == "logspath") {
             config::files.logs_path = value;
         }
     }

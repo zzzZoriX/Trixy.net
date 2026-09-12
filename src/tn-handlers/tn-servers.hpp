@@ -3,6 +3,9 @@
 #include <vector>
 #include <string>
 #include <string_view>
+#include <memory>
+
+class tn_core;
 
 
 namespace handlers {
@@ -10,9 +13,11 @@ namespace handlers {
 class servers {
     std::vector<std::string> servers_list;
     std::string slist_fn;   // variable that store the name of servers list file
+    std::weak_ptr<tn_core> core;
 
 public:
-    servers(std::string_view slist_fn);
+    servers() = default;
+    servers(std::string_view slist_fn, std::shared_ptr<tn_core> core_);
 
     void add_server_to_list(const std::string server);
     void remove_server_from_list(const std::string server);

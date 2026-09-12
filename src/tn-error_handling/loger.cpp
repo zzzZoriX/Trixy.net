@@ -34,14 +34,11 @@ void loger::create_log() const {
         return;
     }
 
-    if(session_logs.empty()) {
-        log_fp << "Program end successfully";
+    for(const auto& log: session_logs) {
+        log_fp << log << "\n";
     }
-    else {
-        for(const auto& log: session_logs) {
-            log_fp << log << "\n";
-        }
-    }
+    
+    log_fp << "Program end successfully";
 
     log_fp.close();
 }

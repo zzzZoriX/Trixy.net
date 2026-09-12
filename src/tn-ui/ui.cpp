@@ -38,7 +38,7 @@ void ui::UI::init_container() {
 
 void ui::UI::run() {
     // todo: ui::new_screen();
-    std::system("clear");
+    // std::system("clear");
 
     screen.Loop(renderer);
 }
@@ -58,8 +58,7 @@ void ui::UI::init_components() {
     if(const auto core_ptr = core_wptr.lock()) {
         slist = core_ptr->get_servers_list_service()->get_list();
 
-        pings_list.reserve(slist.size());
-        std::fill(pings_list.begin(), pings_list.end(), "0 ms");
+        pings_list.resize(slist.size(), "0 ms");
 
         for(int server = 0; server < slist.size(); ++server) {
             std::string server_name = slist.at(server);
@@ -76,8 +75,15 @@ void ui::UI::init_components() {
         }
     }
 
+    if (!servers_list.empty()) {
+        servers_container = Container::Vertical(servers_list);
+    } 
+    else {
+        servers_container = Renderer([] { return text("No servers loaded") | dim; });
+    }
+
     auto ping_tab{Container::Vertical({
-        Container::Vertical(servers_list),
+        servers_container,
         Button("Ping", [this, slist] {
             if(const auto core_ptr = core_wptr.lock()){
                 core_ptr->get_ping_manager()->start(
@@ -86,7 +92,9 @@ void ui::UI::init_components() {
                         if(auto server{std::find(slist.begin(), slist.end(), result.host)}; server != slist.end()) {
                             auto index = std::distance(slist.begin(), server);
 
-                            pings_list.at(index) = std::to_string(result.avg_ping.count());
+                            pings_list.at(index) = std::to_string(result.avg_ping.count()) + " ms";
+
+                            screen.PostEvent(Event::Custom);
                         }
                     }
                 );

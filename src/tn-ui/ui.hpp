@@ -19,6 +19,7 @@ class UI {
 
     Component actions_menu;
     Component action_container;
+    Component servers_container;
 
     std::vector<std::string> actions_tab;
     std::vector<Component> servers_list;

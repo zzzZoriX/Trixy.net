@@ -1,23 +1,41 @@
 #include "tn-servers.hpp"
 #include <fstream>
 #include <array>
-#include <algorithm>
+#include <boost/algorithm/algorithm.hpp>
+#include <boost/algorithm/string/trim.hpp>
+#include <filesystem>
+#include <format>
+#include "../core.hpp"
+#include <tn-error_handling/error_codes.hpp>
 
 using namespace handlers;
 
 
-servers::servers(std::string_view slist_fn)
-:   slist_fn(slist_fn) {
-    std::ifstream slist_fp{slist_fn.data()};
+servers::servers(std::string_view slist_fn, std::shared_ptr<tn_core> core_)
+:   slist_fn(slist_fn)
+,   core(core_) {
+    std::filesystem::path file_path{slist_fn};
+    std::ifstream slist_fp{file_path};
 
-    if(!slist_fp.is_open()) {
-        throw std::runtime_error("Failed to open servers list file");
+    if (!slist_fp.is_open()) {
+        throw std::runtime_error("Failed to open servers list file: " + file_path.string());
     }
 
-    std::vector<std::string> servers_list;
+    std::string line;
+    while (std::getline(slist_fp, line)) {
+        boost::algorithm::trim(line);
 
-    for(std::array<char, 65535> server; slist_fp.getline(&server[0], 65535, '\n');)
-        servers_list.push_back(server.data());
+        if (line.empty()) continue;
+
+        servers_list.push_back(line);
+
+        if(auto core_ptr = core.lock()) {
+            core_ptr->get_loger()->add_log(
+                std::format("Loaded server - {}", line),
+                SUCCESS
+            );
+        }
+    }
 
     slist_fp.close();
 }
