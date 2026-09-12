@@ -26,7 +26,7 @@ void loger::create_log() const {
 
     auto str_time{std::format("{:%T}", now)};
 
-    std::ofstream log_fp{std::format("tn-log::{}.log", str_time)};
+    std::ofstream log_fp{std::format("{}tn-log::{}.log", logs_path, str_time)};
 
     if(!log_fp.is_open()) {
         std::cerr << "CAN'T CREATE THE LOG FILE. ERROR." << std::endl;
