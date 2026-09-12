@@ -58,23 +58,3 @@ bool servers::validate_server_name(std::string_view server) const {
 
     return true;
 }
-
-std::vector<server_ui> to_ui(std::vector<std::string> sl) {
-    std::vector<server_ui> s_ui;
-
-    for(const auto& s: sl) {
-        s_ui.push_back({s, false});
-    } 
-
-    return s_ui;
-}
-
-std::vector<std::string> from_ui(std::vector<server_ui> s_ui) {
-    std::vector<std::string> sl;
-
-    for(const auto& s: s_ui) {
-        sl.push_back(s.first);
-    }
-
-    return sl;
-}
