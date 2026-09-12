@@ -86,6 +86,8 @@ class ping_manager {
 public:
     ping_manager(io_context& ioc, std::shared_ptr<tn_core> core);
 
+    ping_manager& operator=(const ping_manager& other); // idk why, but this operator overload function declare fix the problem in core.cpp at tn_pm init line in run function
+
     void start(std::vector<std::string> hosts, ping_callback callback) const;
 };
 
