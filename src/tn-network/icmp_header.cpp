@@ -1,5 +1,4 @@
 #include "icmp_header.hpp"
-#include <unistd.h>
 
 using namespace network;
 
@@ -27,34 +26,4 @@ unsigned short icmp_header::decode(int a, int b) const {
 void icmp_header::encode(int a, int b, unsigned short n) {
     rep[a] = static_cast<unsigned char>(n >> 8);
     rep[b] = static_cast<unsigned char>(n & 0xFF);
-}
-
-
-template<typename Iterator>
-void compute_check_sum(icmp_header& header, Iterator begin, Iterator end) {
-    unsigned int sum{
-        (header.type() << 8) + header.code() + header.id() + header.seq_num()
-    };
-
-    Iterator body_iter{begin};
-
-    while(body_iter != end) {
-        sum += (static_cast<unsigned char>(*body_iter++) << 8);
-
-        if(body_iter != end)
-            sum += static_cast<unsigned char>(*body_iter++);
-    }
-
-    sum = (sum >> 16) + (sum & 0xFFFF);
-    sum += (sum >> 16);
-
-    header.check_sum(static_cast<unsigned short>(~sum));
-}
-
-unsigned short get_id() {
-#ifdef ASIO_WINDOWS
-    return static_cast<unsigned short>(::GetCurrentProcessId());
-#else 
-    return static_cast<unsigned short>(::getpid());
-#endif
 }

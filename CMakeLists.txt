@@ -14,7 +14,8 @@ add_executable(trixy-net ./src/main.cpp
     src/tn-handlers/tn-servers.cpp
     src/tn-network/icmp_header.cpp
     src/tn-network/ipv4_header.cpp
-    src/tn-network/tn-ping.cpp)
+    src/tn-network/tn-ping.cpp
+    src/tn-error_handling/loger.cpp)
 
 target_include_directories(trixy-net PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 

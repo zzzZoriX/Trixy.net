@@ -3,6 +3,9 @@
 using namespace network;
 
 
+ipv4_header::ipv4_header()
+:   rep(0) {}
+
 unsigned char ipv4_header::version() const { return (rep[0] >> 4) & 0xF; }
 unsigned short ipv4_header::header_length() const { return (rep[0] & 0xF) * 4; }
 unsigned char ipv4_header::type_of_service() const { return rep[1]; }

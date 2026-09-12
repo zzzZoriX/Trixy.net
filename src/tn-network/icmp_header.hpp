@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <algorithm>
+#include <unistd.h>
 
 namespace network {
 
@@ -46,8 +47,32 @@ private:
 
 
 template<typename Iterator>
-void compute_check_sum(icmp_header& header, Iterator begin, Iterator end);
+void compute_check_sum(icmp_header& header, Iterator begin, Iterator end) {
+    unsigned int sum{
+        (static_cast<unsigned int>(header.type()) << 8) + header.code() + header.id() + header.seq_num()
+    };
 
-unsigned short get_id();
+    Iterator body_iter{begin};
+
+    while(body_iter != end) {
+        sum += (static_cast<unsigned char>(*body_iter++) << 8);
+
+        if(body_iter != end)
+            sum += static_cast<unsigned char>(*body_iter++);
+    }
+
+    sum = (sum >> 16) + (sum & 0xFFFF);
+    sum += (sum >> 16);
+
+    header.check_sum(static_cast<unsigned short>(~sum));
+}
+
+inline unsigned short get_id() {
+#ifdef ASIO_WINDOWS
+    return static_cast<unsigned short>(::GetCurrentProcessId());
+#else 
+    return static_cast<unsigned short>(::getpid());
+#endif
+}
 
 }

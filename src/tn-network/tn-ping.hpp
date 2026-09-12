@@ -80,13 +80,16 @@ private:
 };
 
 class ping_manager {
-    io_context& ioc;
+    std::reference_wrapper<boost::asio::io_context> ioc;
     std::weak_ptr<tn_core> core;
 
 public:
     ping_manager(io_context& ioc, std::shared_ptr<tn_core> core);
 
-    ping_manager& operator=(const ping_manager& other); // idk why, but this operator overload function declare fix the problem in core.cpp at tn_pm init line in run function
+    ping_manager(const ping_manager&) = delete;
+    ping_manager& operator=(const ping_manager&) = delete;
+    ping_manager(ping_manager&&) = default;
+    ping_manager& operator=(ping_manager&&) = default;
 
     void start(std::vector<std::string> hosts, ping_callback callback) const;
 };

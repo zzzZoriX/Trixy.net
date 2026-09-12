@@ -7,7 +7,7 @@ using namespace network;
 
 ping_manager::ping_manager(io_context& ioc, std::shared_ptr<tn_core> core)
 :   ioc(ioc)
-,   core(core) {}
+,   core(std::move(core)) {}
 
 void ping_manager::start(std::vector<std::string> hosts, ping_callback callback) const {
     for(const auto& host: hosts)
