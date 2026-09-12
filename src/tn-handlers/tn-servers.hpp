@@ -13,11 +13,12 @@ class servers {
 
 public:
     servers(std::string_view slist_fn);
-    ~servers();
 
     void add_server_to_list(const std::string server);
     void remove_server_from_list(const std::string server);
     std::vector<std::string> get_list(void) const;
+
+    void commit() const;
 
 private:
     bool validate_server_name(const std::string_view server) const;

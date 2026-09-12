@@ -22,7 +22,7 @@ servers::servers(std::string_view slist_fn)
     slist_fp.close();
 }
 
-servers::~servers() {
+void servers::commit() const {
     std::ofstream slist_fp{slist_fn};
 
     if(!slist_fp.is_open()) {
