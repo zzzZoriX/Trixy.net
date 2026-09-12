@@ -10,7 +10,7 @@ ping_manager::ping_manager(io_context& ioc, std::shared_ptr<tn_core> core)
 
 void ping_manager::start(std::vector<std::string> hosts, ping_callback callback) const {
     for(const auto& host: hosts)
-        std::make_shared<pinger>(host, ioc, callback)->start();
+        std::make_shared<pinger>(host, ioc, callback, core)->start();
 }
 
 
