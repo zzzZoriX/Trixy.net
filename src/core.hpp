@@ -25,10 +25,12 @@ class tn_core: public std::enable_shared_from_this<tn_core> {
     network::ping_manager tn_pm;    // trixy-net ping manager
     // settings
 
-public:
-    tn_core() = default;
+    boost::asio::io_context& ioc;
 
-    void run(std::string_view cfgfp, boost::asio::io_context& ioc);
+public:
+    tn_core(std::string_view cfgfp, boost::asio::io_context& ioc);
+
+    void run();
 
     void restart();
 
