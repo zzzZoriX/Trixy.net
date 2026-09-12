@@ -39,16 +39,16 @@ void compute_check_sum(icmp_header& header, Iterator begin, Iterator end) {
     Iterator body_iter{begin};
 
     while(body_iter != end) {
-        sum += (static_case<unsigned char>(*body_iter++) << 8);
+        sum += (static_cast<unsigned char>(*body_iter++) << 8);
 
         if(body_iter != end)
-            sum += static_case<unsigned char>(*body_iter++);
+            sum += static_cast<unsigned char>(*body_iter++);
     }
 
     sum = (sum >> 16) + (sum & 0xFFFF);
     sum += (sum >> 16);
 
-    header.check_sum(static_case<unsigned short>(~sum));
+    header.check_sum(static_cast<unsigned short>(~sum));
 }
 
 unsigned short get_id() {
