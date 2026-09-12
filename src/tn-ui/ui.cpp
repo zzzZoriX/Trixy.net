@@ -6,6 +6,7 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+#include "../core.hpp"
 
 using namespace ftxui;
 

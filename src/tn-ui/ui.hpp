@@ -5,9 +5,10 @@
 #include <string>
 #include <map>
 #include <memory>
-#include"../core.hpp"
 
 using namespace ftxui;
+
+class tn_core;
 
 
 namespace ui {
