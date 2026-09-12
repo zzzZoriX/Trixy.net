@@ -7,6 +7,7 @@
 #include <chrono>
 #include <string_view>
 #include <memory>
+#include <atomic>
 
 #include "ipv4_header.hpp"
 #include "icmp_header.hpp"
@@ -48,7 +49,7 @@ using ping_callback = std::function<void(ping_result)>;
 #define TIMEOUT_PING(host) ping_result(7107111, host)
     
 class pinger: public std::enable_shared_from_this<pinger> {
-    io_context& ioc;
+    boost::asio::strand<boost::asio::any_io_executor> strand;
     std::string host;
     std::weak_ptr<tn_core> core;
 
@@ -62,6 +63,7 @@ class pinger: public std::enable_shared_from_this<pinger> {
     ip::icmp::socket sock;
 
     ping_callback callback;
+    std::atomic<bool> callback_invoked{false};
     
     std::chrono::seconds timeout;
 
@@ -77,6 +79,11 @@ private:
     void handle_timeout(system::error_code ec);
     void start_receive();
     void handle_receive(system::error_code ec, std::size_t len);
+
+private:
+    void emit_result();
+    void stop();
+    void log(const std::string& msg);
 };
 
 class ping_manager {

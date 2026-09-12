@@ -18,7 +18,7 @@ void ping_manager::start(std::vector<std::string> hosts, ping_callback callback)
 pinger::pinger(const std::string& host, io_context& ioc, ping_callback callback, std::weak_ptr<tn_core> core)
 :   host(host)
 ,   resolver(ioc)
-,   ioc(ioc)
+,   strand(boost::asio::make_strand(ioc))
 ,   sock(ioc, ip::icmp::v4())
 ,   timer(ioc)
 ,   seq_num(0)
@@ -34,6 +34,8 @@ void pinger::start() {
 }
 
 void pinger::start_send() {
+    log("Ping request sended");
+
     std::string body{"trixy-ping"};
 
     icmp_header echo_req;
@@ -58,16 +60,17 @@ void pinger::start_send() {
     );
 
     timer.expires_after(timeout);
-    timer.async_wait([this, self = shared_from_this()] (system::error_code ec) {
+    timer.async_wait(boost::asio::bind_executor(strand, [this, self = shared_from_this()] (system::error_code ec) {
         handle_timeout(ec);
-    });
+    }));
 }
 
 void pinger::handle_timeout(system::error_code ec) {
-    system::error_code sock_ec;
+    if (ec == boost::asio::error::operation_aborted) {
+        return;
+    }
 
-    sock.cancel(sock_ec);
-    sock.close(sock_ec);
+    stop();
 
     if(ec) {
         if(auto core_ptr = core.lock()) {
@@ -77,24 +80,50 @@ void pinger::handle_timeout(system::error_code ec) {
             );
         }
 
-        callback(ERROR_PING(host));
+        result = ERROR_PING(host);
     }
-    else if (ec == boost::asio::error::operation_aborted) {}
     else {
-        callback(TIMEOUT_PING(host));
+        result = TIMEOUT_PING(host);
+    }
+        
+    emit_result();
+}
+
+void pinger::stop() {
+    system::error_code ec;
+
+    timer.cancel();
+    sock.cancel(ec);
+    sock.close(ec);
+}
+
+void pinger::log(const std::string& msg) {
+    if(auto core_ptr = core.lock()) {
+        core_ptr->get_loger()->add_log(
+            std::format("{} - {}", msg, host),
+            SUCCESS
+        );
     }
 }
 
 void pinger::start_receive() {
     sock.async_receive(
         buffer.prepare(65536), // 64KB
-        [this, self = shared_from_this()] (system::error_code ec, std::size_t len) {
+        boost::asio::bind_executor(strand, [this, self = shared_from_this()] (system::error_code ec, std::size_t len) {
             handle_receive(ec, len);
-        }
+        })
     );
 }
 
 void pinger::handle_receive(system::error_code ec, std::size_t len) {
+    if (ec == boost::asio::error::operation_aborted) {
+        return;
+    }
+ 
+    timer.cancel();
+
+    log("Ping reply received");
+
     if(ec) {
         if(auto core_ptr = core.lock()) {
             core_ptr->get_loger()->add_log(
@@ -103,7 +132,7 @@ void pinger::handle_receive(system::error_code ec, std::size_t len) {
             );
         }
 
-        callback(ERROR_PING(host));
+        result = ERROR_PING(host);
     }
     else {
         buffer.commit(len);
@@ -122,14 +151,22 @@ void pinger::handle_receive(system::error_code ec, std::size_t len) {
             icmp_head.seq_num() == seq_num
         ) {
             auto now{std::chrono::steady_clock::now()};
-
             auto elapsed{
                 std::chrono::duration_cast<ping_time>(now - time_sent)
             };
 
-            callback(ping_result(elapsed, host));
+            result = ping_result(elapsed, host);
         }
+    }
 
-        timer.cancel();
+    buffer.consume(len);
+    emit_result();
+}
+
+void pinger::emit_result() {
+    if(!callback_invoked.exchange(true)) {
+        stop();
+
+        callback(result);
     }
 }

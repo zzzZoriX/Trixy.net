@@ -38,7 +38,7 @@ void ui::UI::init_container() {
 
 void ui::UI::run() {
     // todo: ui::new_screen();
-    // std::system("clear");
+    std::system("clear");
 
     screen.Loop(renderer);
 }
@@ -89,13 +89,16 @@ void ui::UI::init_components() {
                 core_ptr->get_ping_manager()->start(
                     slist,
                     [this, slist](network::ping_result result) {
-                        if(auto server{std::find(slist.begin(), slist.end(), result.host)}; server != slist.end()) {
-                            auto index = std::distance(slist.begin(), server);
+                        screen.Post([this, slist, result] {
+                            if(auto server{std::find(slist.begin(), slist.end(), result.host)}; server != slist.end()) {
+                                auto index = std::distance(slist.begin(), server);
 
-                            pings_list.at(index) = std::to_string(result.avg_ping.count()) + " ms";
-
-                            screen.PostEvent(Event::Custom);
-                        }
+                                if(index < pings_list.size())
+                                    pings_list.at(index) = std::to_string(result.avg_ping.count()) + " ms";
+                            }
+                        });
+                            
+                        screen.PostEvent(Event::Custom);
                     }
                 );
             }
