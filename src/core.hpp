@@ -9,6 +9,7 @@
 #include <memory>
 #include <tn-handlers/handlers.hpp>
 #include <tn-ui/ui.hpp>
+#include <tn-error_handling/loger.hpp>
 
 
 // As long as Trixy is not asynchronous, there is no need to use a mutex or `boost::asio::strand`.
@@ -18,6 +19,7 @@ class tn_core: public std::enable_shared_from_this<tn_core> {
     ui::UI tn_ui;               // trixy-net user interface
     
     handlers::servers tn_slm;   // trixy-net servers list manager
+    error_handling::loger tn_loger;
     // network services...
     // settings
 
@@ -30,8 +32,8 @@ public:
 
     void stop();
 
-
     const handlers::servers* const get_servers_list_service();
     const ui::UI* const get_ui_service();
     const handlers::config* const get_config_service();
+    const error_handling::loger* const get_loger();
 };
