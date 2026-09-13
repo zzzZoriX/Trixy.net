@@ -6,6 +6,7 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+#include <format>
 #include "../core.hpp"
 
 using namespace ftxui;
@@ -85,22 +86,46 @@ void ui::UI::init_components() {
     auto ping_tab{Container::Vertical({
         servers_container,
         Button("Ping", [this, slist] {
-            if(const auto core_ptr = core_wptr.lock()){
-                core_ptr->get_ping_manager()->start(
-                    slist,
-                    [this, slist](network::ping_result result) {
-                        screen.Post([this, slist, result] {
-                            if(auto server{std::find(slist.begin(), slist.end(), result.host)}; server != slist.end()) {
-                                auto index = std::distance(slist.begin(), server);
+            try {
+                if(const auto core_ptr = core_wptr.lock()){
+                    core_ptr->get_ping_manager()->start(
+                        slist,
+                        [this, slist](network::ping_result result) {
+                            screen.Post([this, slist, result] {
+                                if(auto server = std::find(slist.begin(), slist.end(), result.host); server != slist.end()) {
+                                    auto index{std::distance(slist.begin(), server)};
 
-                                if(index < pings_list.size())
-                                    pings_list.at(index) = std::to_string(result.avg_ping.count()) + " ms";
-                            }
-                        });
-                            
-                        screen.PostEvent(Event::Custom);
-                    }
-                );
+                                    if(index < pings_list.size()) {
+                                        pings_list.at(index) = std::to_string(result.avg_ping.count()) + " ms";
+
+                                        if(const auto core_ptr = core_wptr.lock()) {
+                                            core_ptr->get_loger()->add_log(
+                                                std::format("{} ping getted: {}", result.host, result.avg_ping),
+                                                PING_SUCCESS
+                                            );
+                                        }
+                                    }
+                                    else {
+                                        if(const auto core_ptr = core_wptr.lock()) {
+                                            core_ptr->get_loger()->add_log(
+                                                std::format("Unknown server: {}", *server),
+                                                PING_ERROR
+                                            );
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    );
+                }
+            }
+            catch (const std::exception& e) {
+                if(const auto core_ptr = core_wptr.lock()) {
+                    core_ptr->get_loger()->add_log(
+                        std::format("Ping exception: {}", e.what()),
+                        PING_ERROR
+                    );
+                }
             }
         })
     })};

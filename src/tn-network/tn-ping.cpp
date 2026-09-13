@@ -10,8 +10,27 @@ ping_manager::ping_manager(io_context& ioc, std::shared_ptr<tn_core> core)
 ,   core(std::move(core)) {}
 
 void ping_manager::start(std::vector<std::string> hosts, ping_callback callback) const {
-    for(const auto& host: hosts)
-        std::make_shared<pinger>(host, ioc, callback, core)->start();
+    for(const auto& host: hosts) {
+        try {
+            std::make_shared<pinger>(host, ioc, callback, core)->start();
+        }
+        catch (const system::system_error& e) {
+            if(const auto core_ptr = core.lock()) {
+                core_ptr->get_loger()->add_log(
+                    std::format("Ping error for {}: {}  {}", host, e.what(), e.code().message()),
+                    PING_ERROR
+                );
+            }
+        }
+        catch (const std::exception& e) {
+            if(const auto core_ptr = core.lock()) {
+                core_ptr->get_loger()->add_log(
+                    std::format("Ping error for {}: {}", host, e.what()),
+                    PING_ERROR
+                );
+            }
+        }
+    }
 }
 
 
