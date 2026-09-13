@@ -8,6 +8,7 @@
 #include <string_view>
 #include <memory>
 #include <atomic>
+#include <tn-error_handling/error_codes.hpp>
 
 #include "ipv4_header.hpp"
 #include "icmp_header.hpp"
@@ -83,7 +84,7 @@ private:
 private:
     void emit_result();
     void stop();
-    void log(const std::string& msg);
+    void log(const std::string& msg, const error_code code);
 };
 
 class ping_manager {

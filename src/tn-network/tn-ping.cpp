@@ -34,7 +34,7 @@ void pinger::start() {
 }
 
 void pinger::start_send() {
-    log("Ping request sended");
+    log("Ping request sended", SEND_SUCCESS);
 
     std::string body{"trixy-ping"};
 
@@ -54,10 +54,18 @@ void pinger::start_send() {
 
     time_sent = std::chrono::steady_clock::now();
 
+    system::error_code ec;
+
     sock.send_to(
         req_buffer.data(),
-        dest
+        dest,
+        0,
+        ec
     );
+
+    if(ec) {
+        log(std::format("Can't send ping request to {}. Error: {}", host, ec.message()), SEND_ERROR);
+    }
 
     timer.expires_after(timeout);
     timer.async_wait(boost::asio::bind_executor(strand, [this, self = shared_from_this()] (system::error_code ec) {
@@ -73,12 +81,7 @@ void pinger::handle_timeout(system::error_code ec) {
     stop();
 
     if(ec) {
-        if(auto core_ptr = core.lock()) {
-            core_ptr->get_loger()->add_log(
-                std::format("Error in timeout: {}", ec.message()),
-                TIMEOUT_ABORT
-            );
-        }
+        log(std::format("Error in timeout: {}", ec.message()), TIMEOUT_ERROR);
 
         result = ERROR_PING(host);
     }
@@ -93,15 +96,23 @@ void pinger::stop() {
     system::error_code ec;
 
     timer.cancel();
+
     sock.cancel(ec);
+    if(ec) {
+        log(std::format("Can't cancel operations on socket of {} connection", host), SOCK_ERROR);
+    }
+
     sock.close(ec);
+    if(ec) {
+        log(std::format("Can't close connection to {}", host), SOCK_ERROR);
+    }
 }
 
-void pinger::log(const std::string& msg) {
+void pinger::log(const std::string& msg, const error_code code) {
     if(auto core_ptr = core.lock()) {
         core_ptr->get_loger()->add_log(
             std::format("{} - {}", msg, host),
-            SUCCESS
+            code
         );
     }
 }
@@ -122,15 +133,8 @@ void pinger::handle_receive(system::error_code ec, std::size_t len) {
  
     timer.cancel();
 
-    log("Ping reply received");
-
     if(ec) {
-        if(auto core_ptr = core.lock()) {
-            core_ptr->get_loger()->add_log(
-                std::format("Error occured when reply was received: {}", ec.message()),
-                READ_ABORT
-            );
-        }
+        log(std::format("Error occured when reply was received: {}", ec.message()), READ_ERROR);
 
         result = ERROR_PING(host);
     }
@@ -156,6 +160,8 @@ void pinger::handle_receive(system::error_code ec, std::size_t len) {
             };
 
             result = ping_result(elapsed, host);
+
+            log("Ping reply received", READ_SUCCESS);
         }
     }
 

@@ -2,7 +2,10 @@
 
 enum error_code {
     SUCCESS = 0,
-    SEND_ABORT = 100,
-    READ_ABORT = 101,
-    TIMEOUT_ABORT = 102,
+    SEND_SUCCESS = 1,
+    READ_SUCCESS = 2,
+    SEND_ERROR = 100,
+    READ_ERROR = 101,
+    TIMEOUT_ERROR = 102,
+    SOCK_ERROR = 103
 };
