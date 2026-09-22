@@ -16,7 +16,8 @@ add_executable(trixy-net ./src/main.cpp
     src/tn-network/icmp_header.cpp
     src/tn-network/ipv4_header.cpp
     src/tn-network/tn-ping.cpp
-    src/tn-error_handling/loger.cpp)
+    src/tn-error_handling/loger.cpp
+    src/tn-network/tn-tracker/tn-tracker.cpp)
 
 add_executable(test ./code_test/main.cpp)
 
