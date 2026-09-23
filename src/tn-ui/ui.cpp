@@ -133,11 +133,18 @@ void ui::UI::init_components() {
     auto traffic_terminal{Renderer([this] {
         Elements elements;
 
-        for(const auto& pack: packets_list) {
-            elements.push_back(text(pack));
+        size_t total_packets = packets_list.size();
+
+        for(size_t i = 0; i < total_packets; ++i) {
+            if(i == total_packets - 1) {
+                elements.push_back(text(packets_list[i]) | focus);
+            } 
+            else {
+                elements.push_back(text(packets_list[i]));
+            }
         }
 
-        return vbox(std::move(elements)) | yframe | flex;
+        return vbox(std::move(elements)) | vscroll_indicator | yframe | yflex | focusPositionRelative(0, 1);
     })};
 
     auto traffic_terminal_window{Renderer(traffic_terminal, [traffic_terminal] {
@@ -156,7 +163,10 @@ void ui::UI::init_components() {
 
                 core_ptr->get_tracker()->start(settings, [this](std::string pi) {
                     packets_list.push_back(pi);
+
+                    screen.PostEvent(Event::Custom);
                 });
+
             }
         }),
         Button("Stop tracking", [this] {
