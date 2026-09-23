@@ -24,6 +24,7 @@ class UI {
     std::vector<std::string> actions_tab;
     std::vector<Component> servers_list;
     std::vector<std::string> pings_list;
+    std::vector<std::string> packets_list;
 
     int action_selected,
         server_selected;

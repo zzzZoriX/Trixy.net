@@ -130,8 +130,43 @@ void ui::UI::init_components() {
         })
     })};
 
+    auto traffic_terminal{Renderer([this] {
+        Elements elements;
+
+        for(const auto& pack: packets_list) {
+            elements.push_back(text(pack));
+        }
+
+        return vbox(std::move(elements)) | yframe | flex;
+    })};
+
+    auto traffic_terminal_window{Renderer(traffic_terminal, [traffic_terminal] {
+        return window(
+            text("Traffic terminal") | bold | center | color(Color::RGB(0, 179, 255)),
+            traffic_terminal->Render() | flex
+        );
+    })};
+
+    auto traffic_buttons{Container::Horizontal({
+        Button("Start tracking", [this] {
+            if(const auto core_ptr = core_wptr.lock()) {
+                network::tracker_settings settings{};
+
+                core_ptr->get_tracker()->start(settings, [this](std::string pi) {
+                    packets_list.push_back(pi);
+                });
+            }
+        }),
+        Button("Stop tracking", [this] {
+            if(const auto core_ptr = core_wptr.lock()) {
+                core_ptr->get_tracker()->stop();
+            }
+        })
+    })};
+
     auto traffic_tab{Container::Vertical({
-        Button("Start tracking", [] {})
+        traffic_terminal_window,
+        traffic_buttons
     })};
 
     auto settings_tab{Container::Vertical({
