@@ -6,7 +6,8 @@ tn_core::tn_core(std::string_view cfgfp, boost::asio::io_context& ioc)
 ,   tn_loger(tn_cfg.get_logs_path())
 ,   ioc(ioc)
 ,   tn_ui(nullptr)
-,   tn_pm(ioc, nullptr) {}
+,   tn_pm(ioc, nullptr)
+,   tn_tracker(std::make_shared<error_handling::loger>(tn_loger)) {}
 
 void tn_core::run() {
     tn_pm = network::ping_manager(ioc, shared_from_this());
@@ -42,4 +43,8 @@ error_handling::loger* const tn_core::get_loger() {
 
 network::ping_manager* const tn_core::get_ping_manager() {
     return &tn_pm;
+}
+
+network::tracker* const tn_core::get_tracker() {
+    return &tn_tracker;
 }

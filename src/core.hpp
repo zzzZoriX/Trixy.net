@@ -12,6 +12,7 @@
 #include <tn-error_handling/loger.hpp>
 #include <tn-network/tn-ping.hpp>
 #include <boost/asio.hpp>
+#include <tn-network/tn-tracker/tn-tracker.hpp>
 
 
 // As long as Trixy is not asynchronous, there is no need to use a mutex or `boost::asio::strand`.
@@ -23,6 +24,7 @@ class tn_core: public std::enable_shared_from_this<tn_core> {
     handlers::servers tn_slm;   // trixy-net servers list manager
     error_handling::loger tn_loger;
     network::ping_manager tn_pm;    // trixy-net ping manager
+    network::tracker tn_tracker;
     // settings
 
     boost::asio::io_context& ioc;
@@ -41,4 +43,5 @@ public:
     handlers::config* const get_config_service();
     error_handling::loger* const get_loger();
     network::ping_manager* const get_ping_manager();
+    network::tracker* const get_tracker();
 };
