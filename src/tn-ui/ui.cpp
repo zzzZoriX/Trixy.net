@@ -152,6 +152,8 @@ void ui::UI::init_components() {
             if(const auto core_ptr = core_wptr.lock()) {
                 network::tracker_settings settings{};
 
+                settings.device_name = "wlx503dd1ffd15f";
+
                 core_ptr->get_tracker()->start(settings, [this](std::string pi) {
                     packets_list.push_back(pi);
                 });
