@@ -19,7 +19,7 @@ tracker::tracker(std::shared_ptr<error_handling::loger> loger)
 
 void tracker::start(const tracker_settings& settings, tracker_callback callback) {
     this->settings = settings;
-    this->callback = callback;
+    this->callback = std::move(callback);
 
     const auto& dev_list{pcpp::PcapLiveDeviceList::getInstance()};
 
@@ -43,19 +43,31 @@ void tracker::start(const tracker_settings& settings, tracker_callback callback)
 
     loger->add_log(std::format("Set filtres for device {}", settings.device_name), SET_SUCCESS);
 
-    device->startCapture(on_packet_arrives, nullptr);
+    capture_cookie = new std::shared_ptr<tracker>(shared_from_this());
+
+    if(!device->startCapture(on_packet_arrives, capture_cookie)) {
+        delete capture_cookie;
+
+        loger->add_log("Can't start tracking", CANT_START);
+
+        return;
+    }
 
     loger->add_log("Tracking started successfully", START_SUCCESS);
 }
 
-// todo: complete this function
 void tracker::stop() {
-    callback();
-
-    device->stopCapture();
-    device->close();
+    delete capture_cookie;
     
-    loger->add_log("Tracking ended succesfully", END_SUCCESS);
+    if(device && device->captureActive()) {
+        device->stopCapture();
+        device->close();
+
+        loger->add_log("Tracking ended succesfully", END_SUCCESS);
+    }
+    else {
+        loger->add_log("Can't end tracking", CANT_END);
+    }
 }
 
 void tracker::set_filters() const {

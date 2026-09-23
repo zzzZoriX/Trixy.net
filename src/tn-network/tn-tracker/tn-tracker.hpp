@@ -22,11 +22,13 @@ struct tracker_settings {
 };
 
 
-class tracker {
+class tracker: public std::enable_shared_from_this<tracker> {
     tracker_settings settings;
     pcpp::PcapLiveDevice* device;
-    tracker_callback callback;
     std::shared_ptr<error_handling::loger> loger;
+    
+    tracker_callback callback;
+    std::shared_ptr<tracker>* capture_cookie;
 
 public:
     tracker(std::shared_ptr<error_handling::loger> loger);
@@ -36,8 +38,8 @@ public:
 
 private:
     void set_filters() const;
-};
 
-void on_packet_arrives(pcpp::RawPacket* rpack, pcpp::PcapLiveDevice* device, void* user_cookie);
+    static void on_packet_arrives(pcpp::RawPacket* rpack, pcpp::PcapLiveDevice* device, void* user_cookie);
+};
 
 }
