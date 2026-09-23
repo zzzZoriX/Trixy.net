@@ -5,6 +5,7 @@
 #include <string>
 #include <map>
 #include <memory>
+#include <tn-network/tn-tracker/tn-tracker.hpp>
 
 using namespace ftxui;
 
@@ -28,8 +29,7 @@ class UI {
 
     int action_selected,
         server_selected;
-
-    std::map<std::string, std::map<std::string, Component>> actions_map;
+    network::tracker_settings tr_settings;
 
     std::weak_ptr<tn_core> core_wptr;
 

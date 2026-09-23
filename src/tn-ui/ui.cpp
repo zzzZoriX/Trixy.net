@@ -14,7 +14,8 @@ using namespace ftxui;
 
 ui::UI::UI(std::shared_ptr<tn_core> core_wptr)
 :   screen{ScreenInteractive::TerminalOutput()}
-,   core_wptr(core_wptr) {}
+,   core_wptr(core_wptr)
+,   tr_settings(network::tracker_settings(false, false, false, false, false, false, false, false, false, "wlx503dd1ffd15f")) {}
 
 void ui::UI::init_container() {
     init_components();
@@ -154,15 +155,38 @@ void ui::UI::init_components() {
         );
     })};
 
+    CheckboxOption option;
+    option.transform = [](const EntryState& state) {
+        auto t = text((state.state ? "[x] " : "[ ] ") + state.label);
+        if(state.focused) {
+            return t | color(Color::Cyan) | bold;
+        }
+        return t;
+    };
+
+    auto settings{Container::Vertical({
+        Checkbox("Log packets", &tr_settings.log_packets, option),
+        Checkbox("Use all ports", &tr_settings.all_ports, option),
+        Checkbox("Use IPv6", &tr_settings.IPv6, option),
+        Checkbox("Check ETH", &tr_settings.ETH, option),
+        Checkbox("Check TCP", &tr_settings.TCP, option),
+        Checkbox("Check UDP", &tr_settings.UDP, option),
+        Checkbox("Check DNS", &tr_settings.DNS, option),
+        Checkbox("Show TLS", &tr_settings.TLS, option),
+        Checkbox("Show HTTP", &tr_settings.HTTP, option)
+    })};
+
+    auto settings_window{Renderer(settings, [settings] {
+        return window(
+            text("Tracker settings") | bold | center | color(Color::RGB(0, 179, 255)),
+            settings->Render()
+        );
+    })};
+
     auto traffic_buttons{Container::Horizontal({
         Button("Start tracking", [this] {
             if(const auto core_ptr = core_wptr.lock()) {
-                network::tracker_settings settings{};
-
-                settings.device_name = "wlx503dd1ffd15f";
-                settings.all_ports = true;
-
-                core_ptr->get_tracker()->start(settings, [this](std::string pi) {
+                core_ptr->get_tracker()->start(tr_settings, [this](std::string pi) {
                     packets_list.push_back(pi);
 
                     screen.PostEvent(Event::Custom);
@@ -177,9 +201,12 @@ void ui::UI::init_components() {
         })
     })};
 
-    auto traffic_tab{Container::Vertical({
-        traffic_terminal_window,
-        traffic_buttons
+    auto traffic_tab{Container::Horizontal({
+        Container::Vertical({
+            traffic_terminal_window,
+            traffic_buttons
+        }) | flex,
+        settings_window
     })};
 
     auto settings_tab{Container::Vertical({
