@@ -1,21 +1,15 @@
 #include <format>
 #include <pcapplusplus/PcapLiveDeviceList.h>
-#include <pcapplusplus/PcapLiveDevice.h>
-#include <pcapplusplus/Packet.h>
 #include <pcapplusplus/EthLayer.h>
 #include <pcapplusplus/IPv4Layer.h>
 #include <pcapplusplus/TcpLayer.h>
 #include <pcapplusplus/UdpLayer.h>
 #include <pcapplusplus/SystemUtils.h>
 #include "tn-tracker.hpp"
+#include <sstream>
 
 using namespace network;
 
-
-tracker::tracker(std::shared_ptr<error_handling::loger> loger)
-:   settings()
-,   device(nullptr)
-,   loger(loger) {}
 
 void tracker::start(const tracker_settings& settings, tracker_callback callback) {
     this->settings = settings;
@@ -101,4 +95,47 @@ void tracker::set_filters() const {
     }
 
     device->setFilter(result_filter);
+}
+
+void tracker::on_packet_arrives(pcpp::RawPacket* rpack, pcpp::PcapLiveDevice* device, void* user_cookie) {
+    if(!user_cookie) {
+        return;
+    }
+
+    auto* self_ptr{static_cast<std::shared_ptr<tracker>*>(user_cookie)};
+    auto self{*self_ptr};
+
+    if(self) {
+        self->handle_packet(rpack);
+    }
+}
+
+void tracker::handle_packet(pcpp::RawPacket* rpack) {
+    pcpp::Packet pack{rpack};
+    std::stringstream result;
+
+    result << std::format("\n[Packet #{} info]\n", ++packets_counter);
+
+    if(auto* eth_layer{pack.getLayerOfType<pcpp::EthLayer>()}; eth_layer != nullptr) {
+        result << std::format("|- MAC: (src){} -> (dst){}\n", eth_layer->getSourceMac().toString(), eth_layer->getDestMac().toString());
+    }
+
+    if(auto* ip_layer{pack.getLayerOfType<pcpp::EthLayer>()}; ip_layer != nullptr) {
+        result << std::format("|- IP: (src){} -> (dst){}\n", ip_layer->getSourceMac().toString(), ip_layer->getDestMac().toString());
+
+        if(auto* tcp_layer{pack.getLayerOfType<pcpp::TcpLayer>()}; tcp_layer != nullptr) {
+            result << std::format("|- TCP ports: (src){} -> (dest){}\n", tcp_layer->getSrcPort(), tcp_layer->getDstPort());
+
+            result << std::format("|- TCP syn flag: {}", (tcp_layer->getTcpHeader()->synFlag == 1 ? "true" : "false"));
+        }
+        if(auto* udp_layer{pack.getLayerOfType<pcpp::UdpLayer>()}; udp_layer != nullptr) {
+            result << std::format("|- UDP ports: (src){} -> (dest){}\n", udp_layer->getSrcPort(), udp_layer->getDstPort());
+        }
+    }
+
+    result << "[Packet end]";
+
+    loger->add_log(result.str(), SUCCESS);
+
+    callback(result.str());
 }
