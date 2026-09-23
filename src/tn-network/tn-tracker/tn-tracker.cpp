@@ -171,19 +171,19 @@ void tracker::handle_packet(pcpp::RawPacket* rpack) {
         result << std::format("\n[Packet #{} info]\n", ++packets_counter);
         result << std::format("|- Size: {} bytes\n", pack.getRawPacket()->getRawDataLen());
 
-        if(auto* eth_layer{pack.getLayerOfType<pcpp::EthLayer>()}; eth_layer != nullptr) {
+        if(auto* eth_layer{pack.getLayerOfType<pcpp::EthLayer>()}; eth_layer != nullptr && settings.ETH) {
             result << std::format("|- MAC: (src){} -> (dst){}\n", eth_layer->getSourceMac().toString(), eth_layer->getDestMac().toString());
         }
 
         if(auto* ip_layer{pack.getLayerOfType<pcpp::IPLayer>()}; ip_layer != nullptr) {
             result << std::format("|- IP: (src){} -> (dst){}\n", ip_layer->getSrcIPAddress().toString(), ip_layer->getDstIPAddress().toString());
 
-            if(auto* tcp_layer{pack.getLayerOfType<pcpp::TcpLayer>()}; tcp_layer != nullptr) {
+            if(auto* tcp_layer{pack.getLayerOfType<pcpp::TcpLayer>()}; tcp_layer != nullptr && settings.TCP) {
                 result << std::format("|- TCP ports: (src){} -> (dst){}\n", tcp_layer->getSrcPort(), tcp_layer->getDstPort());
 
                 result << std::format("|- TCP syn flag: {}\n", (tcp_layer->getTcpHeader()->synFlag == 1 ? "true" : "false"));
 
-                if(auto* ssl_layer = pack.getLayerOfType<pcpp::SSLHandshakeLayer>()) {
+                if(auto* ssl_layer{pack.getLayerOfType<pcpp::SSLHandshakeLayer>()}; ssl_layer != nullptr && settings.TLS) {
                     if(auto* client_hello = ssl_layer->getHandshakeMessageOfType<pcpp::SSLClientHelloMessage>()) {
                         if(auto* sni_ext = client_hello->getExtensionOfType<pcpp::SSLServerNameIndicationExtension>()) {
                             result << std::format("|- TLS SNI (Domain): {}\n", sni_ext->getHostName());
@@ -191,10 +191,10 @@ void tracker::handle_packet(pcpp::RawPacket* rpack) {
                     }
                 }
             }
-            if(auto* udp_layer{pack.getLayerOfType<pcpp::UdpLayer>()}; udp_layer != nullptr) {
+            if(auto* udp_layer{pack.getLayerOfType<pcpp::UdpLayer>()}; udp_layer != nullptr && settings.UDP) {
                 result << std::format("|- UDP ports: (src){} -> (dest){}\n", udp_layer->getSrcPort(), udp_layer->getDstPort());
             }
-            if(auto* dns_layer = pack.getLayerOfType<pcpp::DnsLayer>()) {
+            if(auto* dns_layer{pack.getLayerOfType<pcpp::DnsLayer>()}; dns_layer != nullptr && settings.DNS) {
                 auto* dns_hdr{dns_layer->getDnsHeader()};
                 bool is_query{dns_hdr->queryOrResponse == 0};
 
@@ -213,7 +213,7 @@ void tracker::handle_packet(pcpp::RawPacket* rpack) {
             }
         }
 
-        if(auto* http_req = pack.getLayerOfType<pcpp::HttpRequestLayer>()) {
+        if(auto* http_req{pack.getLayerOfType<pcpp::HttpRequestLayer>()}; http_req != nullptr && settings.HTTP) {
             if(auto* host_field = http_req->getFieldByName(PCPP_HTTP_HOST_FIELD)) {
                 result << std::format("|- HTTP host: {}\n", host_field->getFieldValue());
             }
@@ -221,7 +221,7 @@ void tracker::handle_packet(pcpp::RawPacket* rpack) {
 
         result << "[Packet end]";
 
-        loger->add_log(result.str(), SUCCESS);
+        if(settings.log_packets) loger->add_log(result.str(), SUCCESS);
 
         callback(result.str());
     }

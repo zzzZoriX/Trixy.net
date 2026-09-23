@@ -13,10 +13,14 @@ namespace network {
 using tracker_callback = std::function<void(std::string)>;
 
 struct tracker_settings {
-    bool    all_ports,
+    bool    log_packets,
+            all_ports,
             IPv6,
             TCP,
             UDP,
+            DNS,
+            TLS,
+            HTTP,
             ETH;
     std::string device_name;
 };
