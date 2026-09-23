@@ -178,7 +178,7 @@ void tracker::handle_packet(pcpp::RawPacket* rpack) {
             result << std::format("|- IP: (src){} -> (dst){}\n", ip_layer->getSrcIPAddress().toString(), ip_layer->getDstIPAddress().toString());
 
             if(auto* tcp_layer{pack.getLayerOfType<pcpp::TcpLayer>()}; tcp_layer != nullptr) {
-                result << std::format("|- TCP ports: (src){} -> (dest){}\n", tcp_layer->getSrcPort(), tcp_layer->getDstPort());
+                result << std::format("|- TCP ports: (src){} -> (dst){}\n", tcp_layer->getSrcPort(), tcp_layer->getDstPort());
 
                 result << std::format("|- TCP syn flag: {}\n", (tcp_layer->getTcpHeader()->synFlag == 1 ? "true" : "false"));
             }
