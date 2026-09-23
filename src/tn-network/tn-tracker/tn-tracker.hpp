@@ -28,16 +28,21 @@ class tracker: public std::enable_shared_from_this<tracker> {
     std::shared_ptr<error_handling::loger> loger;
     
     tracker_callback callback;
-    std::shared_ptr<tracker>* capture_cookie;
+    std::weak_ptr<tracker>* capture_cookie;
 
-    int packets_counter;
+    std::atomic<int> packets_counter;
 
 public:
     tracker(std::shared_ptr<error_handling::loger> loger)
     :   settings()
     ,   device(nullptr)
     ,   loger(loger)
+    ,   capture_cookie(nullptr)
     ,   packets_counter(0) {}
+
+    ~tracker() {
+        stop();
+    }
 
 
     void start(const tracker_settings& settings, tracker_callback callback);
