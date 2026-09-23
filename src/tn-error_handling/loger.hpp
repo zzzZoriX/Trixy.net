@@ -9,7 +9,6 @@
 namespace error_handling {
 
 class loger {
-    std::vector<std::string> session_logs;
     std::string logs_path;
 
 public:
@@ -17,7 +16,8 @@ public:
 
     void add_log(std::string msg, const error_code code);
 
-    void create_log() const;
+private:
+    void create_log(std::string_view logs_dir);
 };
 
 }

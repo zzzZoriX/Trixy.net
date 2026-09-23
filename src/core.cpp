@@ -19,8 +19,6 @@ void tn_core::run() {
 }
 
 void tn_core::stop() {
-    tn_loger.create_log();
-
     tn_slm.commit();
     tn_cfg.commit();
 }
