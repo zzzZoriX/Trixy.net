@@ -5,6 +5,9 @@
 #include <pcapplusplus/TcpLayer.h>
 #include <pcapplusplus/UdpLayer.h>
 #include <pcapplusplus/SystemUtils.h>
+#include <pcapplusplus/HttpLayer.h>
+#include <pcapplusplus/SSLLayer.h>
+#include <pcapplusplus/DnsLayer.h>
 #include "tn-tracker.hpp"
 #include <sstream>
 
@@ -121,13 +124,15 @@ void tracker::set_filters() const {
 
 
         pcpp::PortFilter    port80{80, pcpp::SRC_OR_DST},
-                            port443{443, pcpp::SRC_OR_DST};
+                            port443{443, pcpp::SRC_OR_DST},
+                            port53{53, pcpp::SRC_OR_DST};
 
         pcpp::OrFilter port_filter;
 
         if(!settings.all_ports) {
             port_filter.addFilter(&port80);
             port_filter.addFilter(&port443);
+            port_filter.addFilter(&port53);
 
             result_filter.addFilter(&port_filter);
         }
@@ -147,19 +152,14 @@ void tracker::set_filters() const {
 }
 
 void tracker::on_packet_arrives(pcpp::RawPacket* rpack, pcpp::PcapLiveDevice* device, void* user_cookie) {
-    try {
-        if(!user_cookie) {
-            return;
-        }
-
-        auto* self_ptr{static_cast<std::weak_ptr<tracker>*>(user_cookie)};
-
-        if(const auto self = self_ptr->lock()) {
-            self->handle_packet(rpack);
-        }
+    if(!user_cookie) {
+        return;
     }
-    catch (...) {
-        // Коллбэк вызывается из фонового C-потока pcap: вылет исключения здесь недопустим
+
+    auto* self_ptr{static_cast<std::weak_ptr<tracker>*>(user_cookie)};
+
+    if(const auto self = self_ptr->lock()) {
+        self->handle_packet(rpack);
     }
 }
 
@@ -169,6 +169,7 @@ void tracker::handle_packet(pcpp::RawPacket* rpack) {
         std::stringstream result;
 
         result << std::format("\n[Packet #{} info]\n", ++packets_counter);
+        result << std::format("|- Size: {} bytes\n", pack.getRawPacket()->getRawDataLen());
 
         if(auto* eth_layer{pack.getLayerOfType<pcpp::EthLayer>()}; eth_layer != nullptr) {
             result << std::format("|- MAC: (src){} -> (dst){}\n", eth_layer->getSourceMac().toString(), eth_layer->getDestMac().toString());
@@ -181,9 +182,40 @@ void tracker::handle_packet(pcpp::RawPacket* rpack) {
                 result << std::format("|- TCP ports: (src){} -> (dst){}\n", tcp_layer->getSrcPort(), tcp_layer->getDstPort());
 
                 result << std::format("|- TCP syn flag: {}\n", (tcp_layer->getTcpHeader()->synFlag == 1 ? "true" : "false"));
+
+                if(auto* ssl_layer = pack.getLayerOfType<pcpp::SSLHandshakeLayer>()) {
+                    if(auto* client_hello = ssl_layer->getHandshakeMessageOfType<pcpp::SSLClientHelloMessage>()) {
+                        if(auto* sni_ext = client_hello->getExtensionOfType<pcpp::SSLServerNameIndicationExtension>()) {
+                            result << std::format("|- TLS SNI (Domain): {}\n", sni_ext->getHostName());
+                        }
+                    }
+                }
             }
             if(auto* udp_layer{pack.getLayerOfType<pcpp::UdpLayer>()}; udp_layer != nullptr) {
                 result << std::format("|- UDP ports: (src){} -> (dest){}\n", udp_layer->getSrcPort(), udp_layer->getDstPort());
+            }
+            if(auto* dns_layer = pack.getLayerOfType<pcpp::DnsLayer>()) {
+                auto* dns_hdr{dns_layer->getDnsHeader()};
+                bool is_query{dns_hdr->queryOrResponse == 0};
+
+                result << std::format("|- DNS: Type={}\n", is_query ? "Query" : "Response");
+
+                for(auto* query{dns_layer->getFirstQuery()}; query != nullptr; query = dns_layer->getNextQuery(query)) {
+                    result << std::format("|   [Query] Name: {}\n", query->getName());
+                }
+
+                if(!is_query) {
+                    for (auto* answer{dns_layer->getFirstAnswer()}; answer != nullptr; answer = dns_layer->getNextAnswer(answer)) {
+                        std::string ip_str{answer->getData() ? answer->getData()->toString() : "N/A"};
+                        result << std::format("|   [Answer] Name: {} -> IP: {}\n", answer->getName(), ip_str);
+                    }
+                }
+            }
+        }
+
+        if(auto* http_req = pack.getLayerOfType<pcpp::HttpRequestLayer>()) {
+            if(auto* host_field = http_req->getFieldByName(PCPP_HTTP_HOST_FIELD)) {
+                result << std::format("|- HTTP host: {}\n", host_field->getFieldValue());
             }
         }
 

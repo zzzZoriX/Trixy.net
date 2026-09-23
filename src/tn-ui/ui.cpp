@@ -160,6 +160,7 @@ void ui::UI::init_components() {
                 network::tracker_settings settings{};
 
                 settings.device_name = "wlx503dd1ffd15f";
+                settings.all_ports = true;
 
                 core_ptr->get_tracker()->start(settings, [this](std::string pi) {
                     packets_list.push_back(pi);
