@@ -17,4 +17,6 @@ enum error_code {
     PING_ERROR = 104,
     SOMETHING_NOT_FOUND = 105,
     CANT_OPEN_SOMETHING = 106,
+    CANT_START = 107,
+    CANT_END = 108,
 };
