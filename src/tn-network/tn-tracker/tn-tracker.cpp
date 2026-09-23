@@ -17,7 +17,7 @@ void tracker::start(const tracker_settings& settings, tracker_callback callback)
 
     const auto& dev_list{pcpp::PcapLiveDeviceList::getInstance()};
 
-    device = dev_list.getPcapLiveDeviceByName(settings.device_name);
+    device = dev_list.getDeviceByName(settings.device_name);
 
     if(!device) {
         loger->add_log(std::format("Device not found {}", settings.device_name), SOMETHING_NOT_FOUND);
