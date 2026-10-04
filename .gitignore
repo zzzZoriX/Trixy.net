@@ -2,3 +2,4 @@ build/
 vcpkg_installed/
 examples/
 code_test
+.cache/
