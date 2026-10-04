@@ -1,13 +1,19 @@
 #pragma once
 
 #include <ftxui/ftxui.hpp>
+#include <string_view>
+#include <array>
 
-typedef struct theme {
-    unsigned char paragraph[3];
-    unsigned char text[3];
-    unsigned char borders[3];
-    unsigned char buttons_text[3];
-    unsigned char selected[3];
+
+struct theme {
+    std::array<unsigned char, 3> paragraph;
+    std::array<unsigned char, 3> text;
+    std::array<unsigned char, 3> borders;
+    std::array<unsigned char, 3> buttons_text;
+    std::array<unsigned char, 3> selected;
+
+    void set_theme(std::string_view t);
+    void load(theme t);
 };
 
 constexpr theme theme_purple = {
