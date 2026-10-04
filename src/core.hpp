@@ -7,7 +7,8 @@
 #include <string>
 #include <string_view>
 #include <memory>
-#include <tn-handlers/handlers.hpp>
+#include <tn-servers/tn-servers.hpp>
+#include <tn-config/tn-config.hpp>
 #include <tn-ui/ui.hpp>
 #include <tn-error_handling/loger.hpp>
 #include <tn-network/tn-ping.hpp>
