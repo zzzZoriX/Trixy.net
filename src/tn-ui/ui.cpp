@@ -13,10 +13,11 @@
 using namespace ftxui;
 
 
-ui::UI::UI(std::shared_ptr<tn_core> core_wptr)
+ui::UI::UI(theme user_theme, std::shared_ptr<tn_core> core_wptr)
 :   screen{ScreenInteractive::TerminalOutput()}
 ,   core_wptr(core_wptr)
-,   tr_settings(network::tracker_settings(false, false, false, false, false, false, false, false, false, "wlx503dd1ffd15f")) {}
+,   tr_settings(network::tracker_settings(false, false, false, false, false, false, false, false, false, "wlx503dd1ffd15f"))
+,   user_theme(user_theme) {}
 
 void ui::UI::init_container() {
     init_components();
@@ -25,12 +26,12 @@ void ui::UI::init_container() {
 
     renderer = Renderer(container, [this] {
         return vbox({
-            text("Trixy.net") | bold | center | color(Color::RGB(0, 179, 255)),
+            text("Trixy.net") | bold | center | color(Color::RGB(user_theme.paragraph[0], user_theme.paragraph[1], user_theme.paragraph[2])),
             separator(),
             hbox({
                 vbox({
-                    text("Features:") | bold | center | color(Color::RGB(0, 255, 171)),
-                    actions_menu->Render() | bold | center | color(Color::RGB(0, 164, 109))
+                    text("Features:") | bold | center | color(Color::RGB(user_theme.paragraph[0], user_theme.paragraph[1], user_theme.paragraph[2])),
+                    actions_menu->Render() | bold | center | color(Color::RGB(user_theme.text[0], user_theme.text[1], user_theme.text[2]))
                 }),
                 separator(),
                 action_container->Render()
@@ -149,18 +150,18 @@ void ui::UI::init_components() {
         return vbox(std::move(elements)) | vscroll_indicator | yframe | yflex | focusPositionRelative(0, 1);
     })};
 
-    auto traffic_terminal_window{Renderer(traffic_terminal, [traffic_terminal] {
+    auto traffic_terminal_window{Renderer(traffic_terminal, [traffic_terminal, this] {
         return window(
-            text("Traffic terminal") | bold | center | color(Color::RGB(0, 179, 255)),
+            text("Traffic terminal") | bold | center | color(Color::RGB(user_theme.text[0], user_theme.text[1], user_theme.text[2])),
             traffic_terminal->Render() | flex
         );
     })};
 
     CheckboxOption option;
-    option.transform = [](const EntryState& state) {
+    option.transform = [this](const EntryState& state) {
         auto t = text((state.state ? "[x] " : "[ ] ") + state.label);
         if(state.focused) {
-            return t | color(Color::Cyan) | bold;
+            return t | color(Color::RGB(user_theme.selected[0], user_theme.selected[1], user_theme.selected[2])) | bold;
         }
         return t;
     };
@@ -177,9 +178,9 @@ void ui::UI::init_components() {
         Checkbox("Show HTTP", &tr_settings.HTTP, option)
     })};
 
-    auto settings_window{Renderer(settings, [settings] {
+    auto settings_window{Renderer(settings, [settings, this] {
         return window(
-            text("Tracker settings") | bold | center | color(Color::RGB(0, 179, 255)),
+            text("Tracker settings") | bold | center | color(Color::RGB(user_theme.paragraph[0], user_theme.paragraph[1], user_theme.paragraph[2])),
             settings->Render()
         );
     })};
@@ -216,7 +217,11 @@ void ui::UI::init_components() {
 
     auto trixy_tab{Container::Vertical({
         Container::Horizontal({
-            Button("Exit", [this] { handlers::tn_exit(screen); }),
+            Button("Exit", [this] { 
+                if(const auto core_ptr = core_wptr.lock()) {
+                    screen.Exit();
+                }          
+            }),
             Button("Restart", [] {})
         })
     })};

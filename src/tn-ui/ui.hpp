@@ -6,6 +6,7 @@
 #include <map>
 #include <memory>
 #include <tn-network/tn-tracker/tn-tracker.hpp>
+#include <tn-themes/tn-themes.hpp>
 
 using namespace ftxui;
 
@@ -32,9 +33,10 @@ class UI {
     network::tracker_settings tr_settings;
 
     std::weak_ptr<tn_core> core_wptr;
+    theme user_theme;
 
 public:
-    UI(std::shared_ptr<tn_core> core_wptr);
+    UI(theme user_theme, std::shared_ptr<tn_core> core_wptr);
 
     /**
      * @brief Initialize the UI application.
