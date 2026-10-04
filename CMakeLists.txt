@@ -10,8 +10,8 @@ add_executable(trixy-net ./src/main.cpp
     src/tn-ui/ui.cpp
     src/tn-ui/tn-screen.cpp
     src/core.cpp
-    src/tn-handlers/tn-config.cpp
-    src/tn-handlers/tn-servers.cpp
+    src/tn-config/tn-config.cpp
+    src/tn-servers/tn-servers.cpp
     src/tn-network/icmp_header.cpp
     src/tn-network/ipv4_header.cpp
     src/tn-network/tn-ping.cpp
