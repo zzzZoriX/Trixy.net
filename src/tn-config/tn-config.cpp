@@ -1,4 +1,4 @@
-#include <tn-handlers/tn-config.hpp>
+#include <tn-config/tn-config.hpp>
 #include <fstream>
 #include <boost/algorithm/string.hpp>
 #include <vector>

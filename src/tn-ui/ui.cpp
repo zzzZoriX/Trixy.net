@@ -1,6 +1,7 @@
 #include <tn-ui/ui.hpp>
 #include <tn-ui/tn-screen.hpp>
-#include <tn-handlers/handlers.hpp>
+#include <tn-servers/tn-servers.hpp>
+#include <tn-config/tn-config.hpp>
 #include <tn-network/tn-ping.hpp>
 #include <cstdlib>
 #include <vector>
