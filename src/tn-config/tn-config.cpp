@@ -29,8 +29,8 @@ config::config(std::string_view config_file_path)
         boost::trim(key);
         boost::trim(value);
 
-        if (key == "settings") {
-            config::files.settings_file = value;
+        if (key == "theme") {
+            config::theme = value;
         } 
         else if (key == "servli") {
             config::files.servers_file = value;
@@ -47,7 +47,7 @@ void config::commit() const {
         throw std::runtime_error("Failed to open config file for writing: " + config_file_path);
     }
 
-    config_file << "settings=" << files.settings_file << "\n";
+    config_file << "theme=" << theme << "\n";
     config_file << "servli=" << files.servers_file << "\n";
     config_file << "logspath=" << files.logs_path << "\n";
 
@@ -62,8 +62,8 @@ std::string config::get_servers_file(void) const {
     return files.servers_file;
 }
 
-std::string config::get_settings_file(void) const {
-    return files.settings_file;
+std::string config::get_theme(void) const {
+    return theme;
 }
 
 void config::update_logs_path(const std::string&& logs_path) {
@@ -74,6 +74,6 @@ void config::update_servers_file(const std::string&& sfn) {
     files.servers_file = sfn;
 }
 
-void config::update_settings_file(const std::string&& stfn) {
-    files.servers_file = stfn;
+void config::update_theme(const std::string&& theme) {
+    this->theme = theme;
 }
