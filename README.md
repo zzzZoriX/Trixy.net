@@ -1,4 +1,4 @@
-<img src="resources/logo.png" align="center">
+<img src="resources/logo.jpeg" align="center">
 <h1 align="center"><b>Trixy.net</b></h1>
 <h3 align="center"><i>Keep your traffic under control.</i></h3>
 
