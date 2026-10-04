@@ -8,7 +8,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_executable(trixy-net ./src/main.cpp
     src/tn-ui/ui.cpp
-    src/tn-handlers/tn-trixy.cpp
     src/tn-ui/tn-screen.cpp
     src/core.cpp
     src/tn-handlers/tn-config.cpp
