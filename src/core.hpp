@@ -18,15 +18,14 @@
 
 // As long as Trixy is not asynchronous, there is no need to use a mutex or `boost::asio::strand`.
 class tn_core: public std::enable_shared_from_this<tn_core> {
-    handlers::config tn_cfg;    // trixy-net config
+    handlers::config tn_cfg;        // trixy-net config
 
-    ui::UI tn_ui;               // trixy-net user interface
+    ui::UI tn_ui;                   // trixy-net user interface
     
-    handlers::servers tn_slm;   // trixy-net servers list manager
+    handlers::servers tn_slm;       // trixy-net servers list manager
     error_handling::loger tn_loger;
     network::ping_manager tn_pm;    // trixy-net ping manager
     std::shared_ptr<network::tracker> tn_tracker;
-    // settings
 
     boost::asio::io_context& ioc;
 
