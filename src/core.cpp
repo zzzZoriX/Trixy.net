@@ -5,13 +5,13 @@ tn_core::tn_core(std::string_view cfgfp, boost::asio::io_context& ioc)
 :   tn_cfg(cfgfp) 
 ,   tn_loger(tn_cfg.get_logs_path())
 ,   ioc(ioc)
-,   tn_ui(theme_crimson, nullptr)
+,   tn_ui(tn_cfg.get_theme(), nullptr)
 ,   tn_pm(ioc, nullptr)
 ,   tn_tracker(std::make_shared<network::tracker>(std::make_shared<error_handling::loger>(tn_loger))) {}
 
 void tn_core::run() {
     tn_pm = network::ping_manager(ioc, shared_from_this());
-    tn_ui = ui::UI(theme_crimson, shared_from_this());
+    tn_ui.load_core_ptr(shared_from_this());
     tn_slm = handlers::servers(tn_cfg.get_servers_file(), shared_from_this());
 
     tn_ui.init_container();
