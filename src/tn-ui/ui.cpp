@@ -1,3 +1,6 @@
+#include <ftxui/component/component_options.hpp>
+#include <ftxui/dom/elements.hpp>
+#include <memory>
 #include <tn-ui/ui.hpp>
 #include <tn-ui/tn-screen.hpp>
 #include <tn-servers/tn-servers.hpp>
@@ -13,11 +16,18 @@
 using namespace ftxui;
 
 
-ui::UI::UI(theme user_theme, std::shared_ptr<tn_core> core_wptr)
+ui::UI::UI(std::string_view user_theme, std::shared_ptr<tn_core> core_wptr)
 :   screen{ScreenInteractive::TerminalOutput()}
 ,   core_wptr(core_wptr)
 ,   tr_settings(network::tracker_settings(false, false, false, false, false, false, false, false, false, "wlx503dd1ffd15f"))
-,   user_theme(user_theme) {}
+,   user_theme() {
+    this->user_theme.set_theme(user_theme);
+}
+
+void ui::UI::load_core_ptr(std::shared_ptr<tn_core> core_ptr) {
+    core_wptr.reset();
+    core_wptr = core_ptr;
+}
 
 void ui::UI::init_container() {
     init_components();
@@ -27,16 +37,16 @@ void ui::UI::init_container() {
     renderer = Renderer(container, [this] {
         return vbox({
             text("Trixy.net") | bold | center | color(Color::RGB(user_theme.paragraph[0], user_theme.paragraph[1], user_theme.paragraph[2])),
-            separator(),
+            separator() | color(Color::RGB(user_theme.borders[0], user_theme.borders[1], user_theme.borders[2])),
             hbox({
                 vbox({
                     text("Features:") | bold | center | color(Color::RGB(user_theme.paragraph[0], user_theme.paragraph[1], user_theme.paragraph[2])),
                     actions_menu->Render() | bold | center | color(Color::RGB(user_theme.text[0], user_theme.text[1], user_theme.text[2]))
                 }),
-                separator(),
+                separator() | color(Color::RGB(user_theme.borders[0], user_theme.borders[1], user_theme.borders[2])),
                 action_container->Render()
             })
-        }) | border;
+        }) | borderStyled(Color::RGB(user_theme.borders[0], user_theme.borders[1], user_theme.borders[3]));
     });
 }
 
@@ -57,6 +67,20 @@ void ui::UI::init_components() {
     action_selected = 0;
     actions_menu = Menu(&actions_tab, &action_selected);
 
+    ButtonOption bopt;
+    bopt.transform = [this](const EntryState& s) {
+        auto element{text(s.label) | center};
+
+        element |= color(Color::RGB(user_theme.buttons_text[0], user_theme.buttons_text[1], user_theme.buttons_text[2]));
+        if(s.focused) element |= bold;
+
+        element = border(element);
+
+        element |= color(Color::RGB(user_theme.borders[0], user_theme.borders[1], user_theme.borders[2]));
+
+        return element;
+    };
+
     std::vector<std::string> slist;
     
     if(const auto core_ptr = core_wptr.lock()) {
@@ -69,9 +93,9 @@ void ui::UI::init_components() {
 
             auto row_component = Renderer([server_name, this, server] {
                 return hbox({
-                    text(server_name) | flex,
-                    separator(),
-                    text(pings_list.at(server))
+                    text(server_name) | flex | color(Color::RGB(user_theme.text[0], user_theme.text[1], user_theme.text[2])),
+                    separator() | color(Color::RGB(user_theme.borders[0], user_theme.borders[1], user_theme.borders[2])),
+                    text(pings_list.at(server)) | color(Color::RGB(user_theme.text[0], user_theme.text[1], user_theme.text[2]))
                 });
             });
 
@@ -83,7 +107,7 @@ void ui::UI::init_components() {
         servers_container = Container::Vertical(servers_list);
     } 
     else {
-        servers_container = Renderer([] { return text("No servers loaded") | dim; });
+        servers_container = Renderer([this] { return text("No servers loaded") | dim | color(Color::RGB(user_theme.text[0], user_theme.text[1], user_theme.text[2])); });
     }
 
     auto ping_tab{Container::Vertical({
@@ -130,7 +154,7 @@ void ui::UI::init_components() {
                     );
                 }
             }
-        })
+        }, bopt)
     })};
 
     auto traffic_terminal{Renderer([this] {
@@ -140,10 +164,10 @@ void ui::UI::init_components() {
 
         for(size_t i = 0; i < total_packets; ++i) {
             if(i == total_packets - 1) {
-                elements.push_back(text(packets_list[i]) | focus);
+                elements.push_back(text(packets_list[i]) | focus | color(Color::RGB(user_theme.text[0], user_theme.text[1], user_theme.text[2])));
             } 
             else {
-                elements.push_back(text(packets_list[i]));
+                elements.push_back(text(packets_list[i]) | color(Color::RGB(user_theme.text[0], user_theme.text[1], user_theme.text[2])));
             }
         }
 
@@ -152,9 +176,9 @@ void ui::UI::init_components() {
 
     auto traffic_terminal_window{Renderer(traffic_terminal, [traffic_terminal, this] {
         return window(
-            text("Traffic terminal") | bold | center | color(Color::RGB(user_theme.text[0], user_theme.text[1], user_theme.text[2])),
+            text("Traffic terminal") | bold | center | color(Color::RGB(user_theme.paragraph[0], user_theme.paragraph[1], user_theme.paragraph[2])),
             traffic_terminal->Render() | flex
-        );
+        ) | color(Color::RGB(user_theme.borders[0], user_theme.borders[1], user_theme.borders[2]));
     })};
 
     CheckboxOption option;
@@ -167,22 +191,22 @@ void ui::UI::init_components() {
     };
 
     auto settings{Container::Vertical({
-        Checkbox("Log packets", &tr_settings.log_packets, option),
-        Checkbox("Use all ports", &tr_settings.all_ports, option),
-        Checkbox("Use IPv6", &tr_settings.IPv6, option),
-        Checkbox("Check ETH", &tr_settings.ETH, option),
-        Checkbox("Check TCP", &tr_settings.TCP, option),
-        Checkbox("Check UDP", &tr_settings.UDP, option),
-        Checkbox("Check DNS", &tr_settings.DNS, option),
-        Checkbox("Show TLS", &tr_settings.TLS, option),
-        Checkbox("Show HTTP", &tr_settings.HTTP, option)
+        Checkbox("Log packets", &tr_settings.log_packets, option) | color(Color::RGB(user_theme.buttons_text[0], user_theme.buttons_text[1], user_theme.buttons_text[2])),
+        Checkbox("Use all ports", &tr_settings.all_ports, option) | color(Color::RGB(user_theme.buttons_text[0], user_theme.buttons_text[1], user_theme.buttons_text[2])),
+        Checkbox("Use IPv6", &tr_settings.IPv6, option) | color(Color::RGB(user_theme.buttons_text[0], user_theme.buttons_text[1], user_theme.buttons_text[2])),
+        Checkbox("Check ETH", &tr_settings.ETH, option) | color(Color::RGB(user_theme.buttons_text[0], user_theme.buttons_text[1], user_theme.buttons_text[2])),
+        Checkbox("Check TCP", &tr_settings.TCP, option) | color(Color::RGB(user_theme.buttons_text[0], user_theme.buttons_text[1], user_theme.buttons_text[2])),
+        Checkbox("Check UDP", &tr_settings.UDP, option) | color(Color::RGB(user_theme.buttons_text[0], user_theme.buttons_text[1], user_theme.buttons_text[2])),
+        Checkbox("Check DNS", &tr_settings.DNS, option) | color(Color::RGB(user_theme.buttons_text[0], user_theme.buttons_text[1], user_theme.buttons_text[2])),
+        Checkbox("Show TLS", &tr_settings.TLS, option) | color(Color::RGB(user_theme.buttons_text[0], user_theme.buttons_text[1], user_theme.buttons_text[2])),
+        Checkbox("Show HTTP", &tr_settings.HTTP, option) | color(Color::RGB(user_theme.buttons_text[0], user_theme.buttons_text[1], user_theme.buttons_text[2]))
     })};
 
     auto settings_window{Renderer(settings, [settings, this] {
         return window(
             text("Tracker settings") | bold | center | color(Color::RGB(user_theme.paragraph[0], user_theme.paragraph[1], user_theme.paragraph[2])),
             settings->Render()
-        );
+        ) | color(Color::RGB(user_theme.borders[0], user_theme.borders[1], user_theme.borders[2]));
     })};
 
     auto traffic_buttons{Container::Horizontal({
@@ -195,12 +219,12 @@ void ui::UI::init_components() {
                 });
 
             }
-        }),
+        }, bopt),
         Button("Stop tracking", [this] {
             if(const auto core_ptr = core_wptr.lock()) {
                 core_ptr->get_tracker()->stop();
             }
-        })
+        }, bopt)
     })};
 
     auto traffic_tab{Container::Horizontal({
@@ -221,8 +245,8 @@ void ui::UI::init_components() {
                 if(const auto core_ptr = core_wptr.lock()) {
                     screen.Exit();
                 }          
-            }),
-            Button("Restart", [] {})
+            }, bopt),
+            Button("Restart", [] {}, bopt)
         })
     })};
 

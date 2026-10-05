@@ -3,6 +3,7 @@
 #include <ftxui/ftxui.hpp>
 #include <vector>
 #include <string>
+#include <string_view>
 #include <memory>
 #include <tn-network/tn-tracker/tn-tracker.hpp>
 #include <tn-themes/tn-themes.hpp>
@@ -35,7 +36,7 @@ class UI {
     theme user_theme;
 
 public:
-    UI(theme user_theme, std::shared_ptr<tn_core> core_wptr);
+    UI(std::string_view user_theme, std::shared_ptr<tn_core> core_wptr);
 
     /**
      * @brief Initialize the UI application.
@@ -46,7 +47,12 @@ public:
      * @brief Run the UI application.
      */
     void run();
+
+
     theme get_theme(void) const;
+
+
+    void load_core_ptr(std::shared_ptr<tn_core> core_wptr);
 
 private:
     /**
