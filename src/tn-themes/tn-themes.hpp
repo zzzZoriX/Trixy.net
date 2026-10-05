@@ -14,6 +14,48 @@ struct theme {
 
     void set_theme(std::string_view t);
     void load(theme t);
+
+    static std::string convert(theme t);
+
+    bool operator==(theme& other) const {
+        bool p = false, 
+             t = false,
+             b = false, 
+             bt = false, 
+             s = false;
+
+        int tc{0};
+
+        for(int i = 0; i < 3; ++i)
+           if(paragraph[i] == other.paragraph[i]) ++tc;
+        if(tc == 3) p = true; 
+
+        tc = 0;
+
+        for(int i = 0; i < 3; ++i)
+           if(text[i] == other.text[i]) ++tc;
+        if(tc == 3) t = true; 
+
+        tc = 0;
+
+        for(int i = 0; i < 3; ++i)
+           if(borders[i] == other.borders[i]) ++tc;
+        if(tc == 3) b = true; 
+
+        tc = 0;
+
+        for(int i = 0; i < 3; ++i)
+           if(buttons_text[i] == other.buttons_text[i]) ++tc;
+        if(tc == 3) bt = true; 
+
+        tc = 0;
+
+        for(int i = 0; i < 3; ++i)
+           if(selected[i] == other.selected[i]) ++tc;
+        if(tc == 3) s = true; 
+
+        return s && bt && b && t && p;
+    }
 };
 
 constexpr theme theme_purple = {
