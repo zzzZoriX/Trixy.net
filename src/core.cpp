@@ -19,6 +19,8 @@ void tn_core::run() {
 }
 
 void tn_core::stop() {
+    tn_cfg.update_theme(theme::convert(tn_ui.get_theme()));   
+
     tn_slm.commit();
     tn_cfg.commit();
 }
