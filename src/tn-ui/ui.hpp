@@ -3,7 +3,6 @@
 #include <ftxui/ftxui.hpp>
 #include <vector>
 #include <string>
-#include <map>
 #include <memory>
 #include <tn-network/tn-tracker/tn-tracker.hpp>
 #include <tn-themes/tn-themes.hpp>
@@ -47,6 +46,7 @@ public:
      * @brief Run the UI application.
      */
     void run();
+    theme get_theme(void) const;
 
 private:
     /**

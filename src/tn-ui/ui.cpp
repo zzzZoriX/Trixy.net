@@ -236,3 +236,7 @@ void ui::UI::init_components() {
         &action_selected
     );
 }
+
+theme ui::UI::get_theme(void) const {
+    return user_theme;
+}
