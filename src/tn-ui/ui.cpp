@@ -82,8 +82,8 @@ void ui::UI::init_components() {
     bopt.transform = [this](const EntryState& s) {
         auto element{text(s.label) | center};
 
-        element |= color(Color::RGB(user_theme.buttons_text[0], user_theme.buttons_text[1], user_theme.buttons_text[2]));
-        if(s.focused) element |= bold;
+        element |= color(Color::RGB(user_theme.text[0], user_theme.text[1], user_theme.text[2]));
+        if(s.focused) element |= color(Color::RGB(user_theme.selected[0], user_theme.selected[1], user_theme.selected[2])) | bold;
 
         element = border(element);
 
@@ -209,9 +209,9 @@ void ui::UI::init_components() {
         }
 
         return t | color(Color::RGB(
-                user_theme.buttons_text[0],
-                user_theme.buttons_text[1],
-                user_theme.buttons_text[2]
+                user_theme.text[0],
+                user_theme.text[1],
+                user_theme.text[2]
             ));
     }; 
     
