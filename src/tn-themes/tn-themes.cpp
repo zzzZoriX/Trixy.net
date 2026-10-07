@@ -31,9 +31,6 @@ void theme::load(theme t) {
     
     for(int i = 0; i < 3; ++i) 
         selected[i] = t.selected[i];
-    
-    for(int i = 0; i < 3; ++i) 
-        buttons_text[i] = t.buttons_text[i];
 }
 
 std::string theme::convert(theme t) {
