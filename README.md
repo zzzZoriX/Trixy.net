@@ -11,3 +11,9 @@
 <li>2. Select an action</li>
 <li>3. Get the result</li>
 </ul>
+
+----=== Trixy.net info ===----
+version: 1.0
+author: zzzZoriX
+C++ version: 23
+tools: cmake , vcpkg , C++23 , C++ Boost , C++ ftxui , C++ pcapplusplus
