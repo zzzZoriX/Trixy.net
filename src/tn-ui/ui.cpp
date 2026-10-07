@@ -200,22 +200,31 @@ void ui::UI::init_components() {
     CheckboxOption option;
     option.transform = [this](const EntryState& state) {
         auto t = text((state.state ? "[x] " : "[ ] ") + state.label);
-        if(state.focused) {
-            return t | color(Color::RGB(user_theme.selected[0], user_theme.selected[1], user_theme.selected[2])) | bold;
+        if (state.focused) {
+            return t | color(Color::RGB(
+                user_theme.selected[0],
+                user_theme.selected[1],
+                user_theme.selected[2]
+            )) | bold;
         }
-        return t;
-    };
 
+        return t | color(Color::RGB(
+                user_theme.buttons_text[0],
+                user_theme.buttons_text[1],
+                user_theme.buttons_text[2]
+            ));
+    }; 
+    
     auto settings{Container::Vertical({
-        Checkbox("Log packets", &tr_settings.log_packets, option) | color(Color::RGB(user_theme.buttons_text[0], user_theme.buttons_text[1], user_theme.buttons_text[2])),
-        Checkbox("Use all ports", &tr_settings.all_ports, option) | color(Color::RGB(user_theme.buttons_text[0], user_theme.buttons_text[1], user_theme.buttons_text[2])),
-        Checkbox("Use IPv6", &tr_settings.IPv6, option) | color(Color::RGB(user_theme.buttons_text[0], user_theme.buttons_text[1], user_theme.buttons_text[2])),
-        Checkbox("Check ETH", &tr_settings.ETH, option) | color(Color::RGB(user_theme.buttons_text[0], user_theme.buttons_text[1], user_theme.buttons_text[2])),
-        Checkbox("Check TCP", &tr_settings.TCP, option) | color(Color::RGB(user_theme.buttons_text[0], user_theme.buttons_text[1], user_theme.buttons_text[2])),
-        Checkbox("Check UDP", &tr_settings.UDP, option) | color(Color::RGB(user_theme.buttons_text[0], user_theme.buttons_text[1], user_theme.buttons_text[2])),
-        Checkbox("Check DNS", &tr_settings.DNS, option) | color(Color::RGB(user_theme.buttons_text[0], user_theme.buttons_text[1], user_theme.buttons_text[2])),
-        Checkbox("Show TLS", &tr_settings.TLS, option) | color(Color::RGB(user_theme.buttons_text[0], user_theme.buttons_text[1], user_theme.buttons_text[2])),
-        Checkbox("Show HTTP", &tr_settings.HTTP, option) | color(Color::RGB(user_theme.buttons_text[0], user_theme.buttons_text[1], user_theme.buttons_text[2]))
+        Checkbox("Log packets", &tr_settings.log_packets, option),
+        Checkbox("Use all ports", &tr_settings.all_ports, option),
+        Checkbox("Use IPv6", &tr_settings.IPv6, option),
+        Checkbox("Check ETH", &tr_settings.ETH, option),
+        Checkbox("Check TCP", &tr_settings.TCP, option),
+        Checkbox("Check UDP", &tr_settings.UDP, option),
+        Checkbox("Check DNS", &tr_settings.DNS, option),
+        Checkbox("Show TLS", &tr_settings.TLS, option),
+        Checkbox("Show HTTP", &tr_settings.HTTP, option)
     })};
 
     auto settings_window{Renderer(settings, [settings, this] {

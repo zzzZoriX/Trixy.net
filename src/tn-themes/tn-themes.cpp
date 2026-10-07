@@ -41,7 +41,7 @@ std::string theme::convert(theme t) {
     if(theme_black == t) return "black";
     if(theme_blue == t) return "blue";
     if(theme_green == t) return "green";
-    if(theme_monochrome == t) return "mono";
+    if(theme_monochrome == t) return "monochrome";
     if(theme_purple == t) return "purple";
     if(theme_teal == t) return "teal";
     if(theme_white == t) return "white";
