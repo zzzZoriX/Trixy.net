@@ -2,6 +2,7 @@
 #include <ftxui/component/component_options.hpp>
 #include <ftxui/component/event.hpp>
 #include <ftxui/dom/elements.hpp>
+#include <iterator>
 #include <memory>
 #include <tn-ui/ui.hpp>
 #include <tn-ui/tn-screen.hpp>
@@ -25,6 +26,13 @@ ui::UI::UI(std::string_view user_theme, std::shared_ptr<tn_core> core_wptr)
 ,   tr_settings(network::tracker_settings(false, false, false, false, false, false, false, false, false, "wlx503dd1ffd15f"))
 ,   user_theme() {
     this->user_theme.set_theme(user_theme);
+
+    auto it{std::find(themes_names.begin(), themes_names.end(), theme::convert(this->user_theme))};
+
+    if(it != themes_names.end())
+        selected_theme = std::distance(themes_names.begin(), it);
+    else 
+        selected_theme = 0;
 }
 
 void ui::UI::load_core_ptr(std::shared_ptr<tn_core> core_ptr) {
@@ -49,7 +57,7 @@ void ui::UI::init_container() {
                 separator() | color(Color::RGB(user_theme.borders[0], user_theme.borders[1], user_theme.borders[2])),
                 action_container->Render()
             })
-        }) | borderStyled(Color::RGB(user_theme.borders[0], user_theme.borders[1], user_theme.borders[3]));
+        }) | borderStyled(Color::RGB(user_theme.borders[0], user_theme.borders[1], user_theme.borders[2]));
     });
 }
 
