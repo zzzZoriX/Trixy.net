@@ -1,4 +1,6 @@
+#include <ftxui/component/component.hpp>
 #include <ftxui/component/component_options.hpp>
+#include <ftxui/component/event.hpp>
 #include <ftxui/dom/elements.hpp>
 #include <memory>
 #include <tn-ui/ui.hpp>
@@ -12,6 +14,7 @@
 #include <algorithm>
 #include <format>
 #include "../core.hpp"
+#include "tn-themes/tn-themes.hpp"
 
 using namespace ftxui;
 
@@ -61,7 +64,7 @@ void ui::UI::init_components() {
     actions_tab = {
         "Ping",
         "Show traffic",
-        "Settings",
+        "Themes",
         "Trixy"
     };
     action_selected = 0;
@@ -79,6 +82,11 @@ void ui::UI::init_components() {
         element |= color(Color::RGB(user_theme.borders[0], user_theme.borders[1], user_theme.borders[2]));
 
         return element;
+    };
+
+    RadioboxOption ropt;
+    ropt.on_change = [this]() {
+           
     };
 
     std::vector<std::string> slist;
@@ -235,8 +243,25 @@ void ui::UI::init_components() {
         settings_window
     })};
 
-    auto settings_tab{Container::Vertical({
-        
+    auto theme_radioboxes{Radiobox({
+        themes_names
+    }, &selected_theme)};  
+
+    theme_selector = CatchEvent(theme_radioboxes, [theme_radioboxes, this](Event e) {
+        if(!theme_radioboxes->OnEvent(e)) return false;
+
+        user_theme.set_theme(themes_names[selected_theme]);
+
+        screen.PostEvent(Event::Custom);
+
+        return true;
+    });
+
+    auto themes_window {Renderer(theme_selector, [this] {
+        return window(
+            text("Themes") | bold | center | color(Color::RGB(user_theme.paragraph[0], user_theme.paragraph[1], user_theme.paragraph[2])),
+            theme_selector->Render()
+        ) | color(Color::RGB(user_theme.borders[0], user_theme.borders[1], user_theme.borders[2]));
     })};
 
     auto trixy_tab{Container::Vertical({
@@ -254,7 +279,7 @@ void ui::UI::init_components() {
         {
             ping_tab,
             traffic_tab,
-            settings_tab,
+            themes_window,
             trixy_tab
         },
         &action_selected

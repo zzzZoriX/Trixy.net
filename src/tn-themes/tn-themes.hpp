@@ -58,6 +58,10 @@ struct theme {
     }
 };
 
+const std::vector<std::string> themes_names = {
+    "purple", "crimson", "blue", "green", "teal", "black", "white", "monochrome"
+};
+
 constexpr theme theme_purple = {
     .paragraph    = {186, 85, 211},  // Medium Orchid
     .text         = {230, 230, 250},  // Lavender

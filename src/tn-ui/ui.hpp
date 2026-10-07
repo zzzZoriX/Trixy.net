@@ -22,6 +22,7 @@ class UI {
     Component actions_menu;
     Component action_container;
     Component servers_container;
+    Component theme_selector;
 
     std::vector<std::string> actions_tab;
     std::vector<Component> servers_list;
@@ -29,6 +30,7 @@ class UI {
     std::vector<std::string> packets_list;
 
     int action_selected,
+        selected_theme,
         server_selected;
     network::tracker_settings tr_settings;
 
