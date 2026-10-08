@@ -21,7 +21,7 @@ using namespace ftxui;
 
 
 ui::UI::UI(std::string_view user_theme, std::shared_ptr<tn_core> core_wptr)
-:   screen{ScreenInteractive::TerminalOutput()}
+:   screen{ScreenInteractive::FullscreenAlternateScreen()}
 ,   core_wptr(core_wptr)
 ,   tr_settings(network::tracker_settings(false, false, false, false, false, false, false, false, false, "wlx503dd1ffd15f"))
 ,   user_theme() {
@@ -46,25 +46,34 @@ void ui::UI::init_container() {
     auto container{Container::Horizontal({actions_menu, action_container})};
 
     renderer = Renderer(container, [this] {
+        auto features{ vbox({
+        text("Features:") | bold | color(Color::RGB(user_theme.paragraph[0], user_theme.paragraph[1], user_theme.paragraph[2])),
+        actions_menu->Render() | color(Color::RGB(user_theme.text[0], user_theme.text[1], user_theme.text[2])),
+
+        filler()
+        }) | size(WIDTH, EQUAL, 35) | flex_grow}; 
+
+        auto container{vbox({
+            action_container->Render(),
+
+            filler()
+        }) | flex};
+            
         return vbox({
             text("Trixy.net") | bold | center | color(Color::RGB(user_theme.paragraph[0], user_theme.paragraph[1], user_theme.paragraph[2])),
             separator() | color(Color::RGB(user_theme.borders[0], user_theme.borders[1], user_theme.borders[2])),
             hbox({
-                vbox({
-                    text("Features:") | bold | center | color(Color::RGB(user_theme.paragraph[0], user_theme.paragraph[1], user_theme.paragraph[2])),
-                    actions_menu->Render() | bold | center | color(Color::RGB(user_theme.text[0], user_theme.text[1], user_theme.text[2]))
-                }),
+                features | xflex_grow_factor(1),
                 separator() | color(Color::RGB(user_theme.borders[0], user_theme.borders[1], user_theme.borders[2])),
-                action_container->Render()
-            })
-        }) | borderStyled(Color::RGB(user_theme.borders[0], user_theme.borders[1], user_theme.borders[2]));
+                container | xflex_grow_factor(4),
+            }) | flex,
+        })  | borderStyled(Color::RGB(user_theme.borders[0], user_theme.borders[1], user_theme.borders[2])) 
+            | flex
+            | bgcolor(Color::RGB(user_theme.bg[0], user_theme.bg[1], user_theme.bg[2])); // todo: complete the bg changing
     });
 }
 
 void ui::UI::run() {
-    // todo: ui::new_screen();
-    std::system("clear");
-
     screen.Loop(renderer);
 }
 
